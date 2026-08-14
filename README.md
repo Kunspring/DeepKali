@@ -1,5 +1,11 @@
 # KaliTUI — AI 驾驭 Kali 的终端渗透 Agent
 
+[![tests](https://img.shields.io/badge/tests-116%20passed-brightgreen)](https://github.com/Kunspring/DeepKali)
+[![tools](https://img.shields.io/badge/tools-48%20%E4%B8%93%E7%94%A8-8A2BE2)](https://github.com/Kunspring/DeepKali)
+[![Python](https://img.shields.io/badge/Python-3.13-blue)]()
+[![Kali](https://img.shields.io/badge/Kali-2026.1-blue)]()
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+
 > 在终端里和 AI 对话，AI 直接调用你的 Kali 工具——从 nmap 扫描到 impacket 横向，
 > 45 个 Kali 常用工具**逐个深度定制**，一个界面完成整个渗透测试工作流。
 
@@ -106,6 +112,46 @@
 | `tshark_capture` | tshark | 协议级抓包（HTTP/SMB 一目了然） |
 | `wifi_monitor` | airmon-ng | 无线监控模式管理 |
 | `mac_change` | macchanger | MAC 查看/修改/随机 |
+
+---
+
+## 🗺 渗透测试工作流（Mermaid 流程图）
+
+一条 `recon_pipeline` 起手，按开放端口自动分流到对应工具链：
+
+```mermaid
+graph TD
+    A["🎯 目标 / recon_pipeline"] --> B["nmap 存活+版本扫描"]
+    B --> C{"开放端口?"}
+    C -->|"21/22/25/3306"| D["hydra_brute 口令爆破"]
+    C -->|"80/443/8080"| E["http_req 指纹"]
+    E --> F["nikto_scan / dir_brute / ffuf_dir"]
+    F --> G{"WAF?"}
+    G -->|"是"| H["waf_detect 识别后绕过"]
+    G -->|"否"| I["sqlmap_check 注入检测"]
+    C -->|"139/445"| J["smb_enum / smb_map"]
+    J --> K["smb_ls 浏览共享"]
+    K --> L["hydra_brute SMB 弱口令"]
+    C -->|"389/636/88"| M["ldap_enum 域枚举"]
+    M --> N["kerberoast / asrep_roast 域提权"]
+    C -->|"5985/5986"| O["winrm_exec 远程执行"]
+    C -->|"6379"| P["redis_check 未授权"]
+    I --> Q["💥 拿权限 / secrets_dump / imp_exec 横向"]
+    N --> Q
+    O --> Q
+```
+
+## 🎬 典型攻击链（一句话 → 一串工具）
+
+| 场景 | 工具链 |
+|---|---|
+| 内网横向 | `net_discover` 找主机 → `nmap_scan` 扫端口 → `smb_enum` 枚举 → `hydra_brute` 爆破 → `imp_exec` 远程执行 |
+| Web 打点 | `osint_gather` 找资产 → `http_req` 指纹 → `ffuf_dir` 挖路径 → `sqlmap_check` 注入 → `payload_gen` 生成马 → `nc_listen` 收 shell |
+| 域渗透 | `ldap_enum` 枚举 → `asrep_roast`/`kerberoast` 拿 hash → `crack_hash` 离线破解 → `secrets_dump` 提权 → `chisel_tunnel` 内网穿透 |
+| 口令闭环 | `cewl_words` 生成词表 → `hash_id` 识别类型 → `crack_hash` 破解 → `hydra_brute` 撞其他服务 |
+| 无线评估 | `wifi_monitor` 开监控模式 → `mac_change` 伪装 → `airodump` 抓握手（run_command）→ `wifi_crack` 破解 |
+
+> 💡 所有链条中的危险步骤（hydra/sqlmap/impacket 等）都会触发安全确认弹窗——**流程自动，授权人工**。
 
 ---
 
