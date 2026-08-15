@@ -303,7 +303,7 @@ graph TD
 git clone https://github.com/Kunspring/DeepKali.git
 cd DeepKali
 ./install.sh        # 创建 venv、装依赖、生成 ~/.local/bin/DeepKali
-export DEEPKALI_API_KEY=sk-你的key
+DeepKali config --api-key sk-你的key   # 一键配置 API key（持久化到配置文件）
 DeepKali
 ```
 
@@ -331,6 +331,23 @@ python3 -m venv .venv
 
 首次运行后生成 `~/.config/DeepKali/config.json` 持久配置，可直接编辑。
 命令行参数：`DeepKali --model deepseek-reasoner --danger always_allow --demo`。
+
+### 🛠 配置指令（推荐）
+
+不想手动编辑 JSON？用内置指令：
+
+```bash
+DeepKali config                        # 查看当前配置
+DeepKali config --api-key sk-xxx       # 设置 API key（持久化，重启仍生效）
+DeepKali config --model deepseek-r1    # 改模型
+DeepKali config --base-url https://... # 改 API 地址
+DeepKali config --danger always_allow  # 改危险命令策略
+DeepKali setup                         # 交互式向导，一步步填
+```
+
+- API key 保存在 `~/.config/DeepKali/config.json`，文件权限自动收紧为 `600`（仅当前用户可读）
+- `DeepKali config` 查看时 key 会打码显示（如 `sk-123...cdef`），不泄露明文
+- 环境变量 `DEEPKALI_API_KEY` 优先级仍高于配置文件
 
 ## 💬 使用
 

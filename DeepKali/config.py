@@ -57,25 +57,38 @@ class Config:
                 setattr(cfg, attr, val)
         return cfg
 
+    def masked_key(self) -> str:
+        """打码显示 api_key：sk-1234****abcd。"""
+        if not self.api_key:
+            return "(未设置)"
+        key = self.api_key
+        if len(key) <= 8:
+            return "*" * len(key)
+        return f"{key[:6]}...{key[-4:]}"
+
     def ensure_dirs(self) -> None:
         SESSION_DIR.mkdir(parents=True, exist_ok=True)
 
     def save(self) -> None:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)
         # demo 是运行态（CLI/env 指定），不持久化，避免污染后续启动
+        data = {
+            "base_url": self.base_url,
+            "model": self.model,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
+            "timeout": self.timeout,
+            "workdir": self.workdir,
+            "danger_policy": self.danger_policy,
+        }
+        if self.api_key:
+            data["api_key"] = self.api_key
         CONFIG_FILE.write_text(
-            json.dumps(
-                {
-                    "base_url": self.base_url,
-                    "model": self.model,
-                    "temperature": self.temperature,
-                    "max_tokens": self.max_tokens,
-                    "timeout": self.timeout,
-                    "workdir": self.workdir,
-                    "danger_policy": self.danger_policy,
-                },
-                indent=2,
-                ensure_ascii=False,
-            ),
+            json.dumps(data, indent=2, ensure_ascii=False),
             encoding="utf-8",
         )
+        # 含密钥，收紧为仅当前用户可读写
+        try:
+            CONFIG_FILE.chmod(0o600)
+        except OSError:
+            pass

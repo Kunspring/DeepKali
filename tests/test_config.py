@@ -85,4 +85,42 @@ def test_save_roundtrip(iso_config):
     assert data["model"] == "roundtrip-model"
     assert data["danger_policy"] == "always_allow"
     assert "demo" not in data  # demo 不持久化
-    assert "api_key" not in data  # 密钥不落盘
+    assert "api_key" not in data  # 空 key 不落盘
+
+
+def test_save_persists_api_key_with_0600(iso_config):
+    cfg = iso_config.Config()
+    cfg.api_key = "sk-test-1234567890abcdef"
+    cfg.save()
+    assert iso_config.CONFIG_FILE.exists()
+    data = json.loads(iso_config.CONFIG_FILE.read_text(encoding="utf-8"))
+    assert data["api_key"] == "sk-test-1234567890abcdef"
+    # 含密钥，权限收紧为仅当前用户可读写
+    assert (iso_config.CONFIG_FILE.stat().st_mode & 0o777) == 0o600
+
+
+def test_save_preserves_existing_perms_on_no_key(iso_config):
+    """无 key 时不改变文件权限。"""
+    cfg = iso_config.Config()
+    cfg.save()
+    assert iso_config.CONFIG_FILE.exists()
+    data = json.loads(iso_config.CONFIG_FILE.read_text(encoding="utf-8"))
+    assert "api_key" not in data
+
+
+def test_masked_key(iso_config):
+    cfg = iso_config.Config()
+    assert cfg.masked_key() == "(未设置)"
+    cfg.api_key = "sk-1234567890abcdef"
+    assert cfg.masked_key() == "sk-123...cdef"
+    cfg.api_key = "short"
+    assert cfg.masked_key() == "*****"
+
+
+def test_load_roundtrip_api_key(iso_config):
+    """保存后 load 能读回 api_key。"""
+    cfg = iso_config.Config()
+    cfg.api_key = "sk-roundtrip-abc"
+    cfg.save()
+    loaded = iso_config.Config.load()
+    assert loaded.api_key == "sk-roundtrip-abc"
