@@ -17,8 +17,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.llm import Agent, LLMError  # noqa: E402
-from kalitui.tools import Executor  # noqa: E402
+from DeepKali.llm import Agent, LLMError  # noqa: E402
+from DeepKali.tools import Executor  # noqa: E402
 
 
 class MockOpenAI:
@@ -279,7 +279,7 @@ async def test_full_bounty_session_with_auto_report(tmp_path) -> None:
     assert any(f["type"] == "flag" and "integr_42" in f["value"] for f in agent.memory.findings)
 
     # 4) 自动报告已生成（auto_report=True）
-    reports = list((tmp_path / "kalitui-reports").glob("*.md"))
+    reports = list((tmp_path / "DeepKali-reports").glob("*.md"))
     assert reports, "报告文件未生成"
     content = reports[0].read_text(encoding="utf-8")
     assert "flag{integr_42}" in content

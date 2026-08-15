@@ -24,8 +24,8 @@ from pathlib import Path
 
 # 授权目标持久化文件（白帽跨会话复用）
 SCOPE_FILE = Path(os.environ.get(
-    "KALITUI_SCOPE_FILE",
-    str(Path.home() / ".config" / "kalitui" / "scope.json"),
+    "DEEPKALI_SCOPE_FILE",
+    str(Path.home() / ".config" / "DeepKali" / "scope.json"),
 )).expanduser()
 
 # ---- 目标提取正则 ----

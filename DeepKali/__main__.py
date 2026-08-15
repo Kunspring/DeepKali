@@ -1,4 +1,4 @@
-"""命令行入口：python -m kalitui [选项]"""
+"""命令行入口：python -m DeepKali [选项]"""
 
 from __future__ import annotations
 
@@ -13,12 +13,12 @@ from .config import Config
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        prog="kalitui",
-        description="KaliTUI — 专为 Kali Linux 打造的 TUI AI agent，让 AI 驾驭你的终端。",
+        prog="DeepKali",
+        description="DeepKali — 专为 Kali Linux 打造的 TUI AI agent，让 AI 驾驭你的终端。",
     )
-    p.add_argument("--version", action="version", version=f"KaliTUI {__version__}")
-    p.add_argument("--config", type=Path, default=None, help="配置文件路径（默认 ~/.config/kalitui/config.json）")
-    p.add_argument("--api-key", default=None, help="API key（也可用环境变量 KALITUI_API_KEY）")
+    p.add_argument("--version", action="version", version=f"DeepKali {__version__}")
+    p.add_argument("--config", type=Path, default=None, help="配置文件路径（默认 ~/.config/DeepKali/config.json）")
+    p.add_argument("--api-key", default=None, help="API key（也可用环境变量 DEEPKALI_API_KEY）")
     p.add_argument("--base-url", default=None, help="OpenAI 兼容 API 地址（默认 https://api.deepseek.com/v1）")
     p.add_argument("--model", default=None, help="模型名（默认 deepseek-chat）")
     p.add_argument("--demo", action="store_true", help="强制 demo 模式（无 API，脚本大脑）")
@@ -63,9 +63,9 @@ def main(argv: list[str] | None = None) -> int:
     cfg.save()
 
     # 延迟导入，加快 --version 响应
-    from .app import KaliTUIApp
+    from .app import DeepKaliApp
 
-    app = KaliTUIApp(cfg)
+    app = DeepKaliApp(cfg)
     app.run()
     return 0
 

@@ -1,4 +1,4 @@
-"""KaliTUI 主界面：Textual 应用。
+"""DeepKali 主界面：Textual 应用。
 
 布局：
   ┌ Header（标题 + 模型） ┐
@@ -143,7 +143,7 @@ class SessionLogger:
 # ---------------------------------------------------------------------------
 # 主应用
 # ---------------------------------------------------------------------------
-class KaliTUIApp(App[None]):
+class DeepKaliApp(App[None]):
     TITLE = f"{APP_NAME} — AI 驾驭 Kali"
     SUB_TITLE = f"v{__version__} · 危险命令需确认 · Ctrl+C 中断"
 
@@ -240,7 +240,7 @@ class KaliTUIApp(App[None]):
             chat.write(
                 "[yellow]⚠ 未检测到 API key，已进入 [bold]Demo 模式[/bold]"
                 "（脚本大脑，仅演示工具链路）[/yellow]\n"
-                "[dim]设置 KALITUI_API_KEY=sk-xxx（或编辑 ~/.config/kalitui/config.json）后重启即接入真实 AI。[/dim]"
+                "[dim]设置 DEEPKALI_API_KEY=sk-xxx（或编辑 ~/.config/DeepKali/config.json）后重启即接入真实 AI。[/dim]"
             )
         chat.write(
             "[dim]试试：『扫描本机』『whoami』『爆破测试』；输入 /help 查看命令。[/dim]\n"
@@ -355,7 +355,7 @@ class KaliTUIApp(App[None]):
         except LLMError as e:
             chat.write(f"[red]⚠ {e}[/red]")
             chat.write(
-                "[dim]检查：KALITUI_API_KEY 是否正确、网络是否可达、模型名是否有效。[/dim]"
+                "[dim]检查：DEEPKALI_API_KEY 是否正确、网络是否可达、模型名是否有效。[/dim]"
             )
         except Exception as e:  # noqa: BLE001
             chat.write(f"[red]⚠ 内部错误: {e}[/red]")

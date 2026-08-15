@@ -99,7 +99,7 @@ class BloodHoundPyProfile(ToolProfile):
 - 采集失败排查：DC 不可达、DNS 解析错误、凭据过期、LDAP 签名（LDAPS）要求。
 - 数据价值：域管理员成员、跨域信任、ACL 滥用点（GenericAll/WriteDacl）、
   GPO 写权限——这些是横向/提权攻击路径的原材料。
-- 与 KaliTUI 联动：bloodhound_py 采集 → 分析路径（neo4j 查询可用 run_command 跑）→
+- 与 DeepKali 联动：bloodhound_py 采集 → 分析路径（neo4j 查询可用 run_command 跑）→
   沿路径用 evilwinrm/imp_exec 验证。"""
     extra_schemas = SCHEMAS
 

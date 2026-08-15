@@ -20,5 +20,5 @@ Thumbs.db
 .coverage
 coverage.xml
 
-# KaliTUI 生成物
-kalitui-reports/
+# DeepKali 生成物
+DeepKali-reports/

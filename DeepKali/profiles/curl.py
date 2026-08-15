@@ -70,7 +70,7 @@ _HEADER_RE = re.compile(r"^[\w.-]+:\s*[^\r\n;]{1,200}(;\s*[\w.-]+:\s*[^\r\n;]{1,
 _DATA_RE = re.compile(r"^[\x20-\x7e]{0,4000}$")
 _COOKIE_RE = re.compile(r"^[\w;=, .@-]{1,300}$")
 # 会话 cookie jar：本进程内跨 http_req 调用共享（登录态保持）
-JAR_PATH = "/tmp/kalitui-session-cookies.txt"
+JAR_PATH = "/tmp/DeepKali-session-cookies.txt"
 
 
 def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
@@ -151,7 +151,7 @@ class CurlProfile(ToolProfile):
 - 定位：Web 渗透最基础工具——验证 fuzz 命中、看响应差异、测接口行为。
 - 组合技：`-L` 跟跳转、`-k` 跳过证书、`-b` 带 cookie、`-H` 自定义头（X-Forwarded-For 绕过 IP 限制）。
 - 登录态保持：POST 登录时 cookie_jar=save 存下会话，之后访问受保护页面带 cookie_jar=use
-  （session=先带旧 cookie 再存新的）；cookie 文件在 /tmp/kalitui-session-cookies.txt。
+  （session=先带旧 cookie 再存新的）；cookie 文件在 /tmp/DeepKali-session-cookies.txt。
 - 测 SQL 注入/目录穿越先看响应差异（长度/状态码/关键字），再上 sqlmap。
 - HEAD 方法快速看响应头（Server 版本、Set-Cookie 标志）；OPTIONS 看允许的方法。
 - 传参注意：-X 指定方法；--data-raw 不解析 @ 文件（防意外读文件）。"""

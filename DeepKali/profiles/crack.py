@@ -95,7 +95,7 @@ class CrackProfile(ToolProfile):
         from pathlib import Path
 
         # hash 写入临时文件（避免命令行过长/特殊字符）
-        tmp = Path(tempfile.mkdtemp(prefix="kalitui-crack-")) / "hash.txt"
+        tmp = Path(tempfile.mkdtemp(prefix="DeepKali-crack-")) / "hash.txt"
         tmp.write_text(h + "\n", encoding="utf-8")
 
         mode = HASHCAT_MODES[htype]

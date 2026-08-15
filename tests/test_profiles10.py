@@ -8,8 +8,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.playbook import (  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.playbook import (  # noqa: E402
     _build_cmd, _parse_ports, _suggest, _summarize, _SERVICE_PLAYBOOK,
 )
 
@@ -134,7 +134,7 @@ class ReconStub:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_full_chain() -> None:
-    from kalitui.profiles import register_extensions
+    from DeepKali.profiles import register_extensions
 
     stub = ReconStub()
     register_extensions(stub)  # type: ignore[arg-type]
@@ -154,7 +154,7 @@ async def test_bounty_recon_full_chain() -> None:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_skip_web_check() -> None:
-    from kalitui.profiles import register_extensions
+    from DeepKali.profiles import register_extensions
 
     stub = ReconStub()
     register_extensions(stub)  # type: ignore[arg-type]
@@ -168,7 +168,7 @@ async def test_bounty_recon_skip_web_check() -> None:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_no_web_ports() -> None:
-    from kalitui.profiles import register_extensions
+    from DeepKali.profiles import register_extensions
 
     stub = ReconStub(nmap_out="Starting Nmap\n22/tcp open ssh OpenSSH 8.9\n")
     register_extensions(stub)  # type: ignore[arg-type]
@@ -181,7 +181,7 @@ async def test_bounty_recon_no_web_ports() -> None:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_injection_rejected() -> None:
-    from kalitui.profiles import register_extensions
+    from DeepKali.profiles import register_extensions
 
     stub = ReconStub()
     register_extensions(stub)  # type: ignore[arg-type]
@@ -211,7 +211,7 @@ class NoToolReconStub:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_skips_missing_tools(monkeypatch) -> None:
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = NoToolReconStub()
     monkeypatch.setattr(P.playbook, "check_installed", lambda t: t in stub.installed)
@@ -231,7 +231,7 @@ async def test_bounty_recon_skips_missing_tools(monkeypatch) -> None:
 # ---------------------------------------------------------------------------
 @pytest.mark.asyncio
 async def test_http_req_max_bytes_truncates() -> None:
-    from kalitui.profiles import register_extensions
+    from DeepKali.profiles import register_extensions
 
     class CurlStub:
         def __init__(self):
@@ -285,7 +285,7 @@ class MultiReconStub:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_multi_target(monkeypatch) -> None:
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = MultiReconStub()
     monkeypatch.setattr(P.playbook, "check_installed", lambda t: t in stub.installed)
@@ -302,7 +302,7 @@ async def test_bounty_recon_multi_target(monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_nuclei_scan(monkeypatch) -> None:
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = MultiReconStub()
     monkeypatch.setattr(P.playbook, "check_installed", lambda t: t in stub.installed)
@@ -318,7 +318,7 @@ async def test_bounty_recon_nuclei_scan(monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_nuclei_skipped_when_off(monkeypatch) -> None:
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = MultiReconStub()
     monkeypatch.setattr(P.playbook, "check_installed", lambda t: t in stub.installed)
@@ -330,7 +330,7 @@ async def test_bounty_recon_nuclei_skipped_when_off(monkeypatch) -> None:
 
 @pytest.mark.asyncio
 async def test_bounty_recon_too_many_targets(monkeypatch) -> None:
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = MultiReconStub()
     monkeypatch.setattr(P.playbook, "check_installed", lambda t: t in stub.installed)
@@ -347,20 +347,20 @@ async def test_bounty_recon_too_many_targets(monkeypatch) -> None:
 # ---------------------------------------------------------------------------
 class TestAirmon:
     def test_status_default(self):
-        from kalitui.profiles.airmon import _build_cmd
+        from DeepKali.profiles.airmon import _build_cmd
 
         cmd, t = _build_cmd({})
         assert cmd == "airmon-ng"
         assert t == 30
 
     def test_start_requires_interface(self):
-        from kalitui.profiles.airmon import _build_cmd
+        from DeepKali.profiles.airmon import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"action": "start"})
 
     def test_start_stop(self):
-        from kalitui.profiles.airmon import _build_cmd
+        from DeepKali.profiles.airmon import _build_cmd
 
         cmd, t = _build_cmd({"action": "start", "interface": "wlan0"})
         assert cmd == "airmon-ng start wlan0"
@@ -368,7 +368,7 @@ class TestAirmon:
         assert cmd2 == "airmon-ng stop wlan0mon"
 
     def test_invalid_action_and_interface(self):
-        from kalitui.profiles.airmon import _build_cmd
+        from DeepKali.profiles.airmon import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"action": "hack"})
@@ -377,7 +377,7 @@ class TestAirmon:
 
     @pytest.mark.asyncio
     async def test_exec_summary(self):
-        from kalitui.profiles import register_extensions
+        from DeepKali.profiles import register_extensions
 
         class Stub:
             def __init__(self):
@@ -395,7 +395,7 @@ class TestAirmon:
 
 class TestCewl:
     def test_build_cmd(self):
-        from kalitui.profiles.cewl import _build_cmd
+        from DeepKali.profiles.cewl import _build_cmd
 
         cmd, t = _build_cmd({"url": "http://t.com/", "email": True, "output": "/tmp/w.txt"})
         assert "cewl http://t.com/" in cmd
@@ -404,7 +404,7 @@ class TestCewl:
         assert t == 180
 
     def test_invalid_url_and_output(self):
-        from kalitui.profiles.cewl import _build_cmd
+        from DeepKali.profiles.cewl import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"url": "ftp://t.com"})
@@ -413,7 +413,7 @@ class TestCewl:
 
     @pytest.mark.asyncio
     async def test_exec_counts_words(self, tmp_path):
-        from kalitui.profiles import register_extensions
+        from DeepKali.profiles import register_extensions
 
         words = tmp_path / "w.txt"
         words.write_text("kali\nadmin\n", encoding="utf-8")
@@ -435,7 +435,7 @@ class TestCewl:
 
 class TestAircrack:
     def test_build_cmd_with_bssid(self, tmp_path):
-        from kalitui.profiles.aircrack import _build_cmd
+        from DeepKali.profiles.aircrack import _build_cmd
 
         cap = tmp_path / "h.cap"
         cap.write_bytes(b"\x00")
@@ -445,13 +445,13 @@ class TestAircrack:
         assert t == 900
 
     def test_missing_cap_rejected(self, tmp_path):
-        from kalitui.profiles.aircrack import _build_cmd
+        from DeepKali.profiles.aircrack import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"capture": str(tmp_path / "nope.cap")})
 
     def test_bad_bssid_rejected(self, tmp_path):
-        from kalitui.profiles.aircrack import _build_cmd
+        from DeepKali.profiles.aircrack import _build_cmd
 
         cap = tmp_path / "h.cap"
         cap.write_bytes(b"\x00")
@@ -460,7 +460,7 @@ class TestAircrack:
 
     @pytest.mark.asyncio
     async def test_exec_key_found(self, tmp_path):
-        from kalitui.profiles import register_extensions
+        from DeepKali.profiles import register_extensions
 
         cap = tmp_path / "h.cap"
         cap.write_bytes(b"\x00")
@@ -481,7 +481,7 @@ class TestAircrack:
 
 class TestDnsrecon:
     def test_modes(self):
-        from kalitui.profiles.dnsrecon import _build_cmd
+        from DeepKali.profiles.dnsrecon import _build_cmd
 
         cmd, _ = _build_cmd({"target": "example.com"})
         assert "dnsrecon -d example.com -t std" in cmd
@@ -491,7 +491,7 @@ class TestDnsrecon:
         assert "-t axfr -n 8.8.8.8" in cmd3
 
     def test_invalid_mode_server(self):
-        from kalitui.profiles.dnsrecon import _build_cmd
+        from DeepKali.profiles.dnsrecon import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"target": "example.com", "mode": "weird"})
@@ -499,7 +499,7 @@ class TestDnsrecon:
             _build_cmd({"target": "example.com", "server": "bad server"})
 
     def test_summarize_new_and_old_format(self):
-        from kalitui.profiles.dnsrecon import _summarize
+        from DeepKali.profiles.dnsrecon import _summarize
 
         raw = (
             "2026-08-14T21:57:11.8 INFO \t A example.com 1.2.3.4\n"
@@ -513,7 +513,7 @@ class TestDnsrecon:
         assert "区域传送成功" in out
 
     def test_summarize_noise_filtered(self):
-        from kalitui.profiles.dnsrecon import _summarize
+        from DeepKali.profiles.dnsrecon import _summarize
 
         out = _summarize("Enumerating subdomains...\nWildcard detected\n")
         assert "未发现解析记录" in out
@@ -525,7 +525,7 @@ class TestDnsrecon:
 class TestCrack:
     @pytest.mark.asyncio
     async def test_hashcat_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -546,7 +546,7 @@ class TestCrack:
 
     @pytest.mark.asyncio
     async def test_hashcat_miss_falls_back_john(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -569,7 +569,7 @@ class TestCrack:
 
     @pytest.mark.asyncio
     async def test_both_miss_and_rules(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -593,7 +593,7 @@ class TestCrack:
 
     @pytest.mark.asyncio
     async def test_no_tool_installed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         stub = type("S", (), {"danger_policy": "ask", "extensions": {}})()
         monkeypatch.setattr(P.crack, "check_installed", lambda t: False)
@@ -603,7 +603,7 @@ class TestCrack:
 
     @pytest.mark.asyncio
     async def test_invalid_hash_and_type(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -627,14 +627,14 @@ class TestCrack:
 # ---------------------------------------------------------------------------
 class TestCrtsh:
     def test_build_cmd_escapes(self):
-        from kalitui.profiles.crtsh import _build_cmd
+        from DeepKali.profiles.crtsh import _build_cmd
 
         cmd = _build_cmd("example.com")
         assert "crt.sh/?q=%25example.com" in cmd
         assert cmd.startswith("curl -sS --max-time 60")
 
     def test_parse_dedup_sort(self):
-        from kalitui.profiles.crtsh import _parse
+        from DeepKali.profiles.crtsh import _parse
 
         raw = json.dumps([
             {"name_value": "www.example.com\napi.example.com"},
@@ -647,20 +647,20 @@ class TestCrtsh:
         assert out == ["api.example.com", "mail.example.com", "www.example.com"]
 
     def test_parse_bad_json(self):
-        from kalitui.profiles.crtsh import _parse
+        from DeepKali.profiles.crtsh import _parse
 
         assert _parse("{broken", 60) == []
         assert _parse("[]", 60) == []
 
     def test_parse_limit(self):
-        from kalitui.profiles.crtsh import _parse
+        from DeepKali.profiles.crtsh import _parse
 
         raw = json.dumps([{"name_value": f"h{i}.example.com"} for i in range(10)])
         assert len(_parse(raw, limit=3)) == 3
 
     @pytest.mark.asyncio
     async def test_exec_parse_and_fallback(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self, output):
@@ -688,7 +688,7 @@ class TestCrtsh:
 
     @pytest.mark.asyncio
     async def test_exec_bad_domain(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         stub = type("S", (), {"danger_policy": "ask", "extensions": {}})()
         monkeypatch.setattr(P.crtsh, "check_installed", lambda t: t == "curl")
@@ -703,21 +703,21 @@ class TestCrtsh:
 # ---------------------------------------------------------------------------
 class TestHttpxProbe:
     def test_split_targets(self):
-        from kalitui.profiles.httpx import _split_targets
+        from DeepKali.profiles.httpx import _split_targets
 
         assert _split_targets("a.com, b.com,a.com") == ["a.com", "b.com"]
         with pytest.raises(ValueError):
             _split_targets(",".join(f"h{i}.com" for i in range(21)))
 
     def test_build_cmd_pipes_stdin(self):
-        from kalitui.profiles.httpx import _build_cmd
+        from DeepKali.profiles.httpx import _build_cmd
 
         cmd = _build_cmd(["vpn.example.com", "10.0.0.5"])
         assert cmd.startswith("printf '%s\\n' vpn.example.com 10.0.0.5 | httpx")
         assert "-status-code -title -tech-detect" in cmd
 
     def test_parse_rows(self):
-        from kalitui.profiles.httpx import _parse
+        from DeepKali.profiles.httpx import _parse
 
         raw = (
             "https://vpn.example.com [200] [VPN 入口] [nginx]\n"
@@ -735,7 +735,7 @@ class TestHttpxProbe:
 
     @pytest.mark.asyncio
     async def test_exec_summary(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -756,7 +756,7 @@ class TestHttpxProbe:
 
     @pytest.mark.asyncio
     async def test_exec_no_alive_and_bad_input(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -785,7 +785,7 @@ class TestHttpxProbe:
 
     @pytest.mark.asyncio
     async def test_exec_not_installed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         stub = type("S", (), {"danger_policy": "ask", "extensions": {}})()
         monkeypatch.setattr(P.httpx, "check_installed", lambda t: False)
@@ -799,7 +799,7 @@ class TestHttpxProbe:
 # ---------------------------------------------------------------------------
 class TestCookieJar:
     def test_jar_modes(self):
-        from kalitui.profiles.curl import JAR_PATH, _build_cmd
+        from DeepKali.profiles.curl import JAR_PATH, _build_cmd
 
         # save：登录后保存
         cmd, _ = _build_cmd({"url": "http://t.com/login", "method": "POST",
@@ -818,7 +818,7 @@ class TestCookieJar:
         assert f"-c {JAR_PATH}" in cmd3
 
     def test_jar_invalid(self):
-        from kalitui.profiles.curl import _build_cmd
+        from DeepKali.profiles.curl import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"url": "http://t.com/", "cookie_jar": "hack"})
@@ -833,7 +833,7 @@ def test_all_profiles_not_installed_branch(monkeypatch):
     import importlib
     from types import SimpleNamespace
 
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = SimpleNamespace(danger_policy="ask", extensions={})
     checked = 0
@@ -860,7 +860,7 @@ def test_all_profiles_not_installed_playbook(monkeypatch):
     import asyncio
     from types import SimpleNamespace
 
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = SimpleNamespace(danger_policy="ask", extensions={})
     monkeypatch.setattr(P.playbook, "check_installed", lambda t: False)
@@ -893,7 +893,7 @@ def _stub_ext(monkeypatch, mod, installed=("curl",), output="STUB"):
 
 @pytest.mark.asyncio
 async def test_ftp_exec_listing(monkeypatch):
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     stub = _stub_ext(monkeypatch, P.ftp, output="index.html\nbackup.zip\nreadme.txt")
     P.register_extensions(stub)  # type: ignore[arg-type]
@@ -910,7 +910,7 @@ async def test_ftp_exec_listing(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_wafw00f_exec_branches(monkeypatch):
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     # 检测到 WAF
     stub = _stub_ext(monkeypatch, P.wafw00f, installed=("wafw00f",), output="The site example.com is behind Cloudflare\nWAF: cloudflare")
@@ -933,7 +933,7 @@ async def test_wafw00f_exec_branches(monkeypatch):
 
 @pytest.mark.asyncio
 async def test_wfuzz_exec_filter(monkeypatch):
-    from kalitui import profiles as P
+    from DeepKali import profiles as P
 
     out_raw = (
         "000000123:   200        12 L    30 W     301 Ch \"http://t/FUZZ\"\n"
@@ -963,7 +963,7 @@ async def test_wfuzz_exec_filter(monkeypatch):
 # ---------------------------------------------------------------------------
 class TestLinpeas:
     def test_parse_hits_and_warns(self):
-        from kalitui.profiles.linpeas import _parse
+        from DeepKali.profiles.linpeas import _parse
 
         raw = (
             "[+] /usr/bin/python3 - SUID\n"
@@ -980,7 +980,7 @@ class TestLinpeas:
 
     @pytest.mark.asyncio
     async def test_exec_summary(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1000,7 +1000,7 @@ class TestLinpeas:
 
     @pytest.mark.asyncio
     async def test_exec_no_hits_and_not_installed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1025,7 +1025,7 @@ class TestLinpeas:
 
     @pytest.mark.asyncio
     async def test_exec_full_mode(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1051,7 +1051,7 @@ class TestBountyReconSubEnum:
     async def test_sub_enum_domain_target(self, monkeypatch):
         import json as _json
 
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1084,7 +1084,7 @@ class TestBountyReconSubEnum:
 
     @pytest.mark.asyncio
     async def test_sub_enum_skipped_for_ip(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1109,7 +1109,7 @@ class TestBountyReconSubEnum:
 
     @pytest.mark.asyncio
     async def test_sub_enum_failure_tolerated(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1135,7 +1135,7 @@ class TestBountyReconSubEnum:
         assert "80/tcp http" in out  # 主流程不受影响
 
     def test_looks_like_domain(self):
-        from kalitui.profiles.playbook import _looks_like_domain
+        from DeepKali.profiles.playbook import _looks_like_domain
 
         assert _looks_like_domain("example.com")
         assert _looks_like_domain("vpn.example.com")
@@ -1149,7 +1149,7 @@ class TestBountyReconSubEnum:
 # ---------------------------------------------------------------------------
 class TestGitLeak:
     def test_build_cmd_probes(self):
-        from kalitui.profiles.gitleak import _build_cmd
+        from DeepKali.profiles.gitleak import _build_cmd
 
         cmd = _build_cmd("http://target.com/app/")
         assert "target.com/app/.git/config" in cmd
@@ -1157,7 +1157,7 @@ class TestGitLeak:
         assert "http_code" in cmd
 
     def test_parse_codes(self):
-        from kalitui.profiles.gitleak import _parse
+        from DeepKali.profiles.gitleak import _parse
 
         assert _parse("200\n404\n") == ("200", "404")
         assert _parse("404") == ("404", "000")
@@ -1165,7 +1165,7 @@ class TestGitLeak:
 
     @pytest.mark.asyncio
     async def test_exec_leaked(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1184,7 +1184,7 @@ class TestGitLeak:
 
     @pytest.mark.asyncio
     async def test_exec_clean_and_bad_url(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1210,14 +1210,14 @@ class TestGitLeak:
 # ---------------------------------------------------------------------------
 class TestSnmpEnum:
     def test_build_cmd(self):
-        from kalitui.profiles.snmp import _build_cmd
+        from DeepKali.profiles.snmp import _build_cmd
 
         cmd = _build_cmd("10.0.0.5", "public")
         assert "snmpwalk -v2c -c public -t 5 10.0.0.5 1.3.6.1.2.1.1" in cmd
         assert "head -40" in cmd
 
     def test_parse_values(self):
-        from kalitui.profiles.snmp import _parse
+        from DeepKali.profiles.snmp import _parse
 
         raw = (
             ".1.3.6.1.2.1.1.1.0 = STRING: \"Linux test-box 6.1.0\"\n"
@@ -1233,7 +1233,7 @@ class TestSnmpEnum:
 
     @pytest.mark.asyncio
     async def test_exec_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1252,7 +1252,7 @@ class TestSnmpEnum:
 
     @pytest.mark.asyncio
     async def test_exec_miss_and_bad_input(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1278,12 +1278,12 @@ class TestSnmpEnum:
 # ---------------------------------------------------------------------------
 class TestNfsEnum:
     def test_build_cmd(self):
-        from kalitui.profiles.nfs import _build_cmd
+        from DeepKali.profiles.nfs import _build_cmd
 
         assert _build_cmd("10.0.0.5") == "showmount -e 10.0.0.5 2>&1"
 
     def test_parse(self):
-        from kalitui.profiles.nfs import _parse
+        from DeepKali.profiles.nfs import _parse
 
         raw = (
             "Export list for 10.0.0.5:\n"
@@ -1298,7 +1298,7 @@ class TestNfsEnum:
 
     @pytest.mark.asyncio
     async def test_exec_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1318,7 +1318,7 @@ class TestNfsEnum:
 
     @pytest.mark.asyncio
     async def test_exec_miss(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1341,7 +1341,7 @@ class TestNfsEnum:
 # ---------------------------------------------------------------------------
 class TestSecretScan:
     def test_scan_patterns(self):
-        from kalitui.profiles.secret_scan import _scan
+        from DeepKali.profiles.secret_scan import _scan
 
         raw = (
             "var aws = 'AKIAIOSFODNN7EXAMPLE';\n"
@@ -1361,13 +1361,13 @@ class TestSecretScan:
         assert all("…" in h[1] or len(h[1]) <= 8 for h in hits)
 
     def test_scan_clean(self):
-        from kalitui.profiles.secret_scan import _scan
+        from DeepKali.profiles.secret_scan import _scan
 
         assert _scan("var x = 42; console.log('hello');") == []
 
     @pytest.mark.asyncio
     async def test_exec_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1386,7 +1386,7 @@ class TestSecretScan:
 
     @pytest.mark.asyncio
     async def test_exec_clean_and_bad_url(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1409,7 +1409,7 @@ class TestSecretScan:
 
 def test_port_fallback_completeness():
     """端口回退表覆盖所有已定制 profile 的常见端口。"""
-    from kalitui.profiles.playbook import _PORT_FALLBACK, _suggest
+    from DeepKali.profiles.playbook import _PORT_FALLBACK, _suggest
 
     # 关键端口都有建议（不落回"服务未知"通用提示）
     for port, svc in ((161, "snmp"), (2049, "nfs"), (1521, "oracle"),
@@ -1429,7 +1429,7 @@ def test_port_fallback_completeness():
 class TestLinpeasWindows:
     @pytest.mark.asyncio
     async def test_windows_uses_winpeas(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1452,7 +1452,7 @@ class TestLinpeasWindows:
 
     @pytest.mark.asyncio
     async def test_windows_not_installed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1474,12 +1474,12 @@ class TestLinpeasWindows:
 # ---------------------------------------------------------------------------
 class TestRsyncEnum:
     def test_build_cmd(self):
-        from kalitui.profiles.rsync import _build_cmd
+        from DeepKali.profiles.rsync import _build_cmd
 
         assert "rsync --list-only --timeout=10 rsync://10.0.0.5/" in _build_cmd("10.0.0.5")
 
     def test_parse(self):
-        from kalitui.profiles.rsync import _parse
+        from DeepKali.profiles.rsync import _parse
 
         raw = (
             "backup          Backup data dir\n"
@@ -1494,7 +1494,7 @@ class TestRsyncEnum:
 
     @pytest.mark.asyncio
     async def test_exec_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1514,7 +1514,7 @@ class TestRsyncEnum:
 
     @pytest.mark.asyncio
     async def test_exec_miss(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1537,7 +1537,7 @@ class TestRsyncEnum:
 # ---------------------------------------------------------------------------
 class TestSslscanExtra:
     def test_build_cmd_sni_and_invalid(self):
-        from kalitui.profiles.sslscan import _build_cmd
+        from DeepKali.profiles.sslscan import _build_cmd
 
         cmd, t = _build_cmd({"host": "example.com", "port": 993, "sni": "mail.example.com"})
         assert "--sni-name mail.example.com" in cmd and "example.com:993" in cmd
@@ -1545,7 +1545,7 @@ class TestSslscanExtra:
             _build_cmd({"host": "example.com", "sni": "bad sni!"})
 
     def test_summarize_branches(self):
-        from kalitui.profiles.sslscan import _summarize
+        from DeepKali.profiles.sslscan import _summarize
 
         raw = (
             "Accepted  TLSv1.2  256 bits  AES256-GCM-SHA384\n"
@@ -1564,7 +1564,7 @@ class TestSslscanExtra:
 
 class TestTheHarvesterExtra:
     def test_summarize_empty_and_hosts(self):
-        from kalitui.profiles.theharvester import _summarize
+        from DeepKali.profiles.theharvester import _summarize
 
         s = _summarize("no results here\n")
         assert "未收集到结果" in s
@@ -1578,7 +1578,7 @@ class TestTheHarvesterExtra:
 
 class TestNetdiscoverExtra:
     def test_summarize_empty(self):
-        from kalitui.profiles.netdiscover import _summarize
+        from DeepKali.profiles.netdiscover import _summarize
 
         s = _summarize("nothing\n")
         assert "未发现" in s or "无" in s
@@ -1589,7 +1589,7 @@ class TestNetdiscoverExtra:
 # ---------------------------------------------------------------------------
 class TestHping3Extra:
     def test_summarize_no_reply(self):
-        from kalitui.profiles.hping3 import _summarize
+        from DeepKali.profiles.hping3 import _summarize
 
         assert "无响应" in _summarize("no packets\n")
         s = _summarize("len=46 ip=10.0.0.5 flags=SA\n")
@@ -1597,7 +1597,7 @@ class TestHping3Extra:
 
     @pytest.mark.asyncio
     async def test_exec_not_installed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1617,7 +1617,7 @@ class TestHping3Extra:
 class TestRedisExtra:
     @pytest.mark.asyncio
     async def test_exec_noauth_and_unreachable(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1642,7 +1642,7 @@ class TestRedisExtra:
 class TestNetcatExtra:
     @pytest.mark.asyncio
     async def test_exec_connect_data_and_empty(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1669,14 +1669,14 @@ class TestNetcatExtra:
 # ---------------------------------------------------------------------------
 class TestTsharkExtra:
     def test_summarize_rows_and_empty(self):
-        from kalitui.profiles.tshark import _summarize
+        from DeepKali.profiles.tshark import _summarize
 
         s = _summarize("1\t00:00\t10.0.0.1\t10.0.0.5\tTCP\tSYN\n")
         assert "抓包明细（前 30 条）" in s
         assert "未抓到包" in _summarize("no packets\n")
 
     def test_build_cmd_filter_and_display(self):
-        from kalitui.profiles.tshark import _build_cmd
+        from DeepKali.profiles.tshark import _build_cmd
 
         cmd, t = _build_cmd({"filter": "port 80", "display": "http.request", "seconds": 5, "interface": "eth0"})
         assert "-f 'port 80'" in cmd and "-Y http.request" in cmd and "-i eth0" in cmd
@@ -1685,7 +1685,7 @@ class TestTsharkExtra:
 class TestSecretsdumpExtra:
     @pytest.mark.asyncio
     async def test_exec_hashes_and_none(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1709,7 +1709,7 @@ class TestSecretsdumpExtra:
 class TestSmtpenumExtra:
     @pytest.mark.asyncio
     async def test_exec_valid_and_none(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1733,7 +1733,7 @@ class TestSmtpenumExtra:
 class TestHashidExtra:
     @pytest.mark.asyncio
     async def test_exec_lines_and_empty(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1758,7 +1758,7 @@ class TestHashidExtra:
 class TestGetnpusersExtra:
     @pytest.mark.asyncio
     async def test_exec_hashes_and_none(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1783,7 +1783,7 @@ class TestGetnpusersExtra:
 
 class TestTestsslExtra:
     def test_summarize_results_weak_empty(self):
-        from kalitui.profiles.testssl import _summarize
+        from DeepKali.profiles.testssl import _summarize
 
         raw = "Testing protocols via sockets\nSSLv3  offered\nOK  TLS1.2\nHeartbleed  vulnerable\n"
         s = _summarize(raw)
@@ -1798,7 +1798,7 @@ class TestTestsslExtra:
 class TestGetuserspnsExtra:
     @pytest.mark.asyncio
     async def test_exec_hashes_and_none(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1824,7 +1824,7 @@ class TestGetuserspnsExtra:
 class TestImpexecExtra:
     @pytest.mark.asyncio
     async def test_exec_methods(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1850,7 +1850,7 @@ class TestImpexecExtra:
 class TestMacchangerExtra:
     @pytest.mark.asyncio
     async def test_exec_set_and_none(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1875,7 +1875,7 @@ class TestMacchangerExtra:
 
 class TestNucleiExtra:
     def test_summarize_empty_and_template(self):
-        from kalitui.profiles.nuclei import _summarize
+        from DeepKali.profiles.nuclei import _summarize
 
         s = _summarize("")
         assert "未命中" in s or "无" in s
@@ -1884,7 +1884,7 @@ class TestNucleiExtra:
 
     @pytest.mark.asyncio
     async def test_exec_no_hits(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1904,7 +1904,7 @@ class TestNucleiExtra:
 class TestSocatExtra:
     @pytest.mark.asyncio
     async def test_exec_listen_and_connect(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1929,7 +1929,7 @@ class TestSocatExtra:
 
 class TestMsfvenomExtra:
     def test_build_cmd_payload(self):
-        from kalitui.profiles.msfvenom import _build_cmd
+        from DeepKali.profiles.msfvenom import _build_cmd
 
         cmd, _t = _build_cmd({"payload": "linux/x64/shell/reverse_tcp",
                               "lhost": "10.0.0.5", "lport": 4444,
@@ -1943,7 +1943,7 @@ class TestMsfvenomExtra:
 # ---------------------------------------------------------------------------
 class TestJoomlaScan:
     def test_build_cmd_and_parse(self):
-        from kalitui.profiles.joomscan import _build_cmd, _parse
+        from DeepKali.profiles.joomscan import _build_cmd, _parse
 
         cmd = _build_cmd("http://t.com/", True)
         assert "joomscan -u 'http://t.com' --enumerate-components" in cmd
@@ -1965,7 +1965,7 @@ class TestJoomlaScan:
 
     @pytest.mark.asyncio
     async def test_exec_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -1985,7 +1985,7 @@ class TestJoomlaScan:
 
     @pytest.mark.asyncio
     async def test_exec_not_joomla_and_bad_url(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2009,7 +2009,7 @@ class TestJoomlaScan:
 # ---------------------------------------------------------------------------
 class TestPlaybookParsers:
     def test_parse_dir_results(self):
-        from kalitui.profiles.playbook import _parse_dir_results
+        from DeepKali.profiles.playbook import _parse_dir_results
 
         out = _parse_dir_results(
             "/admin            (Status: 200)\n/api             (Status: 301)\n"
@@ -2019,7 +2019,7 @@ class TestPlaybookParsers:
         assert not any("404" in r for r in out)
 
     def test_parse_nuclei_dedup(self):
-        from kalitui.profiles.playbook import _parse_nuclei
+        from DeepKali.profiles.playbook import _parse_nuclei
 
         hits = _parse_nuclei(
             "[critical] CVE-2024-1234 RCE\n[low] CVE-2024-1234 RCE\n"
@@ -2028,7 +2028,7 @@ class TestPlaybookParsers:
         assert len(hits) == 3
 
     def test_suggest_fallback_branches(self):
-        from kalitui.profiles.playbook import _suggest
+        from DeepKali.profiles.playbook import _suggest
 
         # 直接命中 / 子串命中
         assert _suggest(22, "ssh") == ["hydra_brute（ssh 弱口令）"]
@@ -2043,7 +2043,7 @@ class TestBountyReconExtra:
     @pytest.mark.asyncio
     async def test_bounty_ip_target_skips_subenum(self, monkeypatch):
         """IP 目标：跳过子域发现；web 深化未装工具时给出跳过提示。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2067,7 +2067,7 @@ class TestBountyReconExtra:
     @pytest.mark.asyncio
     async def test_bounty_subenum_fail_and_httpx(self, monkeypatch):
         """域名目标：crtsh 查到子域 + httpx 存活探测；waf 检测失败容错。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2105,7 +2105,7 @@ class TestBountyReconExtra:
 class TestLdapsearchExtra:
     @pytest.mark.asyncio
     async def test_exec_entries_and_empty(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2130,7 +2130,7 @@ class TestLdapsearchExtra:
         assert "无结果" in out2
 
     def test_build_cmd_creds(self):
-        from kalitui.profiles.ldapsearch import _build_cmd
+        from DeepKali.profiles.ldapsearch import _build_cmd
 
         cmd, _t = _build_cmd({"host": "10.0.0.5", "base": "DC=corp",
                               "username": "admin", "password": "x"})
@@ -2140,7 +2140,7 @@ class TestLdapsearchExtra:
 class TestMsfExtra:
     @pytest.mark.asyncio
     async def test_exec_msf_run_empty(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2157,7 +2157,7 @@ class TestMsfExtra:
         assert "无关键事件行" in out
 
     def test_build_script_options_validation(self):
-        from kalitui.profiles.msf import _build_script
+        from DeepKali.profiles.msf import _build_script
 
         with pytest.raises(ValueError):
             _build_script({"options": "not-a-dict"}, search=False)
@@ -2168,7 +2168,7 @@ class TestMsfExtra:
 class TestNetdiscoverExtra:
     @pytest.mark.asyncio
     async def test_exec_active_and_passive(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2193,7 +2193,7 @@ class TestNetdiscoverExtra:
         assert "未发现主机" in out2
 
     def test_build_cmd_invalid_mode(self):
-        from kalitui.profiles.netdiscover import _build_cmd
+        from DeepKali.profiles.netdiscover import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"range": "10.0.0.0/24", "mode": "loud"})
@@ -2201,7 +2201,7 @@ class TestNetdiscoverExtra:
 
 class TestMsfvenomExtra2:
     def test_build_cmd_invalid_values(self):
-        from kalitui.profiles.msfvenom import _build_cmd
+        from DeepKali.profiles.msfvenom import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"payload": "bad/payload"})
@@ -2221,7 +2221,7 @@ class TestMsfvenomExtra2:
 
 class TestSqlmapExtra:
     def test_build_cmd_data_cookie(self):
-        from kalitui.profiles.sqlmap import _build_cmd
+        from DeepKali.profiles.sqlmap import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"url": "http://t.com/?id=1", "data": "a=b; rm -rf /"})
@@ -2232,7 +2232,7 @@ class TestSqlmapExtra:
         assert "--level 3" in cmd and "--risk 2" in cmd and "--smart" in cmd
 
     def test_summarize_payloads(self):
-        from kalitui.profiles.sqlmap import _summarize
+        from DeepKali.profiles.sqlmap import _summarize
 
         s = _summarize(
             "Parameter: id (GET) is vulnerable\nPayload: id=1 AND 1=2\n"
@@ -2247,7 +2247,7 @@ class TestSqlmapExtra:
 # ---------------------------------------------------------------------------
 class TestBloodHound:
     def test_build_cmd_password_and_hash(self):
-        from kalitui.profiles.bloodhound import _build_cmd
+        from DeepKali.profiles.bloodhound import _build_cmd
 
         cmd, t = _build_cmd("corp.local", "john", "Passw0rd!", "", "")
         assert "bloodhound-python -d corp.local -u john" in cmd and "-p Passw0rd!" in cmd
@@ -2257,7 +2257,7 @@ class TestBloodHound:
         assert "--dc dc1" in cmd2
 
     def test_summarize_done_and_fail(self):
-        from kalitui.profiles.bloodhound import _summarize
+        from DeepKali.profiles.bloodhound import _summarize
 
         s = _summarize("users: 1234\ngroups: 56\nDone in 01M 02S\n")
         assert "AD 采集完成" in s
@@ -2267,7 +2267,7 @@ class TestBloodHound:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2287,7 +2287,7 @@ class TestBloodHound:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2314,7 +2314,7 @@ class TestBloodHound:
 
 class TestPlaybookPortFallback2:
     def test_new_port_fallbacks(self):
-        from kalitui.profiles.playbook import _suggest
+        from DeepKali.profiles.playbook import _suggest
 
         assert any("REST" in s for s in _suggest(9200, "unknown"))
         assert any("stats" in s for s in _suggest(11211, "unknown"))
@@ -2331,7 +2331,7 @@ class TestPlaybookPortFallback2:
 # ---------------------------------------------------------------------------
 class TestMasscan:
     def test_build_cmd(self):
-        from kalitui.profiles.masscan import _build_cmd
+        from DeepKali.profiles.masscan import _build_cmd
 
         cmd, t = _build_cmd("10.0.0.0/24", "80,443", 5000)
         assert "masscan --rate 5000 -p 80,443" in cmd
@@ -2341,7 +2341,7 @@ class TestMasscan:
         assert "-p 1-10000" in cmd2
 
     def test_summarize_found_and_empty(self):
-        from kalitui.profiles.masscan import _summarize
+        from DeepKali.profiles.masscan import _summarize
 
         s = _summarize("Discovered open port 22/tcp on 10.0.0.5\n"
                        "Discovered open port 80/tcp on 10.0.0.5\n"
@@ -2355,7 +2355,7 @@ class TestMasscan:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2374,7 +2374,7 @@ class TestMasscan:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2402,7 +2402,7 @@ class TestMasscan:
 # ---------------------------------------------------------------------------
 class TestKerbrute:
     def test_build_cmd_userenum_and_spray(self):
-        from kalitui.profiles.kerbrute import _build_cmd
+        from DeepKali.profiles.kerbrute import _build_cmd
 
         cmd, t = _build_cmd("corp.local", "users.txt", "", "")
         assert cmd.startswith("kerbrute userenum -d corp.local")
@@ -2412,7 +2412,7 @@ class TestKerbrute:
         assert t == 240
 
     def test_summarize_found_and_none(self):
-        from kalitui.profiles.kerbrute import _summarize
+        from DeepKali.profiles.kerbrute import _summarize
 
         s = _summarize("[+] VALID USERNAME: admin\n[+] VALID USERNAME: svc_backup\n")
         assert "有效用户 2 个" in s
@@ -2423,7 +2423,7 @@ class TestKerbrute:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2442,7 +2442,7 @@ class TestKerbrute:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2471,14 +2471,14 @@ class TestKerbrute:
 # ---------------------------------------------------------------------------
 class TestWhatWeb:
     def test_build_cmd(self):
-        from kalitui.profiles.whatweb import _build_cmd
+        from DeepKali.profiles.whatweb import _build_cmd
 
         cmd, t = _build_cmd("http://example.com", 1)
         assert cmd == "whatweb -a 1 --color=never http://example.com"
         assert t == 120
 
     def test_summarize_tech_and_empty(self):
-        from kalitui.profiles.whatweb import _summarize
+        from DeepKali.profiles.whatweb import _summarize
 
         raw = ("http://example.com [200 OK] Apache[2.4.57] PHP[8.1] WordPress[6.4] "
                "X-Powered-By[PHP/8.1] [title] example")
@@ -2491,7 +2491,7 @@ class TestWhatWeb:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2510,7 +2510,7 @@ class TestWhatWeb:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2538,7 +2538,7 @@ class TestWhatWeb:
 # ---------------------------------------------------------------------------
 class TestDrupwn:
     def test_build_cmd_modes(self):
-        from kalitui.profiles.drupwn import _build_cmd
+        from DeepKali.profiles.drupwn import _build_cmd
 
         cmd, t = _build_cmd("http://example.com", "enumerate")
         assert cmd.startswith("drupwn --mode enumerate")
@@ -2547,7 +2547,7 @@ class TestDrupwn:
         assert t == 120 and t2 == 120 or (t, t2) == (180, 120)
 
     def test_summarize_version_and_modules(self):
-        from kalitui.profiles.drupwn import _summarize
+        from DeepKali.profiles.drupwn import _summarize
 
         raw = ("Drupal 7.58\nModule: views\nModule: webform\n")
         s = _summarize(raw)
@@ -2559,7 +2559,7 @@ class TestDrupwn:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2579,7 +2579,7 @@ class TestDrupwn:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2605,7 +2605,7 @@ class TestDrupwn:
 # ---------------------------------------------------------------------------
 class TestSubfinder:
     def test_build_cmd_silent(self):
-        from kalitui.profiles.subfinder import _build_cmd
+        from DeepKali.profiles.subfinder import _build_cmd
 
         cmd, t = _build_cmd("example.com", True)
         assert cmd == "subfinder -d example.com -silent"
@@ -2614,7 +2614,7 @@ class TestSubfinder:
         assert t == 240
 
     def test_summarize_found_and_none(self):
-        from kalitui.profiles.subfinder import _summarize
+        from DeepKali.profiles.subfinder import _summarize
 
         s = _summarize("api.example.com\nwww.example.com\napi.example.com\n"
                        "notmatching.com\n", "example.com")
@@ -2628,7 +2628,7 @@ class TestSubfinder:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2647,7 +2647,7 @@ class TestSubfinder:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2676,14 +2676,14 @@ class TestSubfinder:
 # ---------------------------------------------------------------------------
 class TestGau:
     def test_build_cmd(self):
-        from kalitui.profiles.gau import _build_cmd
+        from DeepKali.profiles.gau import _build_cmd
 
         cmd, t = _build_cmd("example.com")
         assert cmd == "gau --threads 5 example.com"
         assert t == 240
 
     def test_summarize_high_value_and_empty(self):
-        from kalitui.profiles.gau import _summarize
+        from DeepKali.profiles.gau import _summarize
 
         raw = ("http://example.com/\nhttp://example.com/admin/login\n"
                "http://example.com/api/v1/users\nhttp://example.com/.env\n"
@@ -2699,7 +2699,7 @@ class TestGau:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2718,7 +2718,7 @@ class TestGau:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2741,7 +2741,7 @@ class TestGau:
 
 class TestGauNoHighValue:
     def test_summarize_no_high_value_branch(self):
-        from kalitui.profiles.gau import _summarize
+        from DeepKali.profiles.gau import _summarize
 
         s = _summarize("http://example.com/\nhttp://example.com/about\n")
         head = s.split("原始输出")[0]
@@ -2753,7 +2753,7 @@ class TestGauNoHighValue:
 # ---------------------------------------------------------------------------
 class TestDnsx:
     def test_build_cmd(self):
-        from kalitui.profiles.dnsx import _build_cmd
+        from DeepKali.profiles.dnsx import _build_cmd
 
         cmd, t = _build_cmd(["api.example.com", "www.example.com"], True)
         assert cmd == "dnsx -a -silent -d api.example.com www.example.com"
@@ -2762,7 +2762,7 @@ class TestDnsx:
         assert t == 120
 
     def test_summarize_pairs_and_none(self):
-        from kalitui.profiles.dnsx import _summarize
+        from DeepKali.profiles.dnsx import _summarize
 
         s = _summarize("api.example.com [1.2.3.4]\nwww.example.com [5.6.7.8, 9.10.11.12]\n")
         head = s.split("原始输出")[0]
@@ -2773,7 +2773,7 @@ class TestDnsx:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2793,7 +2793,7 @@ class TestDnsx:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2818,7 +2818,7 @@ class TestDnsx:
 
 class TestDnsxExtra:
     def test_summarize_plain_format_and_many(self):
-        from kalitui.profiles.dnsx import _summarize
+        from DeepKali.profiles.dnsx import _summarize
 
         # 空格分隔格式 + 空行跳过
         s = _summarize("\napi.example.com 1.2.3.4\n\nold.example.com\n")
@@ -2837,7 +2837,7 @@ class TestDnsxExtra:
 # ---------------------------------------------------------------------------
 class TestKatana:
     def test_build_cmd(self):
-        from kalitui.profiles.katana import _build_cmd
+        from DeepKali.profiles.katana import _build_cmd
 
         cmd, t = _build_cmd("http://example.com", True, 3)
         assert cmd == "katana -u http://example.com -d 3 -silent -jc"
@@ -2846,7 +2846,7 @@ class TestKatana:
         assert t == 300
 
     def test_summarize_endpoints_and_empty(self):
-        from kalitui.profiles.katana import _summarize
+        from DeepKali.profiles.katana import _summarize
 
         raw = ("http://example.com/\nhttp://example.com/api/users\n"
                "http://example.com/admin/panel\nhttp://example.com/about\n")
@@ -2860,7 +2860,7 @@ class TestKatana:
 
     @pytest.mark.asyncio
     async def test_exec_success(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2879,7 +2879,7 @@ class TestKatana:
 
     @pytest.mark.asyncio
     async def test_exec_validation(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -2904,7 +2904,7 @@ class TestKatana:
 
 class TestKatanaNoHigh:
     def test_summarize_no_high_value(self):
-        from kalitui.profiles.katana import _summarize
+        from DeepKali.profiles.katana import _summarize
 
         s = _summarize("http://example.com/\nhttp://example.com/about\n")
         head = s.split("原始输出")[0]
@@ -2913,7 +2913,7 @@ class TestKatanaNoHigh:
 
 class TestPlaybookHighValuePorts:
     def test_src_high_value_port_fallbacks(self):
-        from kalitui.profiles.playbook import _suggest
+        from DeepKali.profiles.playbook import _suggest
 
         assert any("Grafana" in s for s in _suggest(3000, "unknown"))
         assert any("actuator" in s for s in _suggest(8080, "unknown"))
@@ -2931,7 +2931,7 @@ class TestPlaybookHighValuePorts:
 
 class TestPlaybookClassicPorts:
     def test_classic_high_value_ports(self):
-        from kalitui.profiles.playbook import _suggest
+        from DeepKali.profiles.playbook import _suggest
 
         assert any("Ghostcat" in s for s in _suggest(8009, "unknown"))
         assert any("GlassFish" in s for s in _suggest(4848, "unknown"))
@@ -2944,7 +2944,7 @@ class TestPlaybookClassicPorts:
 # ---------------------------------------------------------------------------
 class TestBaseBranches:
     def test_sanitize_target_cidr_prefix_errors(self):
-        from kalitui.profiles.base import sanitize_target
+        from DeepKali.profiles.base import sanitize_target
 
         with pytest.raises(ValueError):
             sanitize_target("10.0.0.0/abc")   # 前缀非数字
@@ -2953,7 +2953,7 @@ class TestBaseBranches:
         assert sanitize_target("10.0.0.0/24") == "10.0.0.0/24"
 
     def test_sanitize_url_empty_and_query(self):
-        from kalitui.profiles.base import sanitize_url, sanitize_wordlist
+        from DeepKali.profiles.base import sanitize_url, sanitize_wordlist
 
         with pytest.raises(ValueError):
             sanitize_url("  ")
@@ -2963,13 +2963,13 @@ class TestBaseBranches:
             sanitize_wordlist("/etc/passwd")
 
     def test_parse_ports_top_prefix(self):
-        from kalitui.profiles.base import sanitize_ports
+        from DeepKali.profiles.base import sanitize_ports
 
         assert sanitize_ports("top-50") == "top-50"
         assert sanitize_ports("80,443") == "80,443"
 
     def test_inventory_empty_and_no_match(self):
-        import kalitui.profiles as P
+        import DeepKali.profiles as P
 
         saved = list(P.REGISTRY)
         P.REGISTRY.clear()
@@ -2983,7 +2983,7 @@ class TestBaseBranches:
 class TestRegistryMissingExec:
     def test_missing_exec_raises(self):
         """schema 名无对应 exec_ 方法 → AttributeError（注册表一致性）。"""
-        import kalitui.profiles as P
+        import DeepKali.profiles as P
 
         class BadProfile(P.ToolProfile):
             name = "bad_profile"
@@ -3007,7 +3007,7 @@ class TestRegistryMissingExec:
 class TestBloodHoundValidationExtra:
     @pytest.mark.asyncio
     async def test_exec_validation_extra(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3036,7 +3036,7 @@ class TestCewlWordlistBranches:
     @pytest.mark.asyncio
     async def test_wordlist_missing_file_and_empty(self, monkeypatch, tmp_path):
         """词表文件缺失（OSError）与空文件两分支。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3066,13 +3066,13 @@ class TestCewlWordlistBranches:
 
 class TestChiselModeBranches:
     def test_remote_invalid(self):
-        from kalitui.profiles.chisel import _build_cmd
+        from DeepKali.profiles.chisel import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"server": "10.0.0.5:8080", "remote": "R:9999"})  # remote 格式非法
 
     def test_mode_not_reverse(self):
-        from kalitui.profiles.chisel import _build_cmd
+        from DeepKali.profiles.chisel import _build_cmd
 
         cmd, t = _build_cmd({"server": "10.0.0.5:8080", "remote": "R:3389:10.0.0.9:3389"})
         assert "chisel client 10.0.0.5:8080 R:3389:10.0.0.9:3389" in cmd
@@ -3085,7 +3085,7 @@ class TestChiselTunnelEstablished:
     @pytest.mark.asyncio
     async def test_tunnel_established_head(self, monkeypatch):
         """输出含 'server: session' → 隧道建立提示。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3114,7 +3114,7 @@ class TestChiselTunnelEstablished:
 class TestCrtshExtra:
     @pytest.mark.asyncio
     async def test_parse_non_list_and_ip_target(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         assert P.crtsh._parse('{"not": "list"}', 60) == []
         assert P.crtsh._parse("not-json!!", 60) == []
@@ -3136,7 +3136,7 @@ class TestCrtshExtra:
         assert "域名格式非法" in out
 
     def test_parse_over_limit_note(self):
-        from kalitui.profiles.crtsh import _parse
+        from DeepKali.profiles.crtsh import _parse
 
         raw = json.dumps([{"name_value": "a.example.com\nb.example.com"} for _ in range(80)])
         subs = _parse(raw, 60)
@@ -3145,7 +3145,7 @@ class TestCrtshExtra:
     @pytest.mark.asyncio
     async def test_exec_over_limit_note(self, monkeypatch):
         """exec 时子域数 ≥ limit → 超出显示上限提示。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3172,7 +3172,7 @@ class TestCrtshExtra:
 
 class TestCurlExtra:
     def test_data_and_headers_invalid(self):
-        from kalitui.profiles.curl import _build_cmd
+        from DeepKali.profiles.curl import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"url": "http://x", "data": "bad\x00data"})
@@ -3182,14 +3182,14 @@ class TestCurlExtra:
             _build_cmd({"url": "http://x", "cookie": "bad\x00cookie"})
 
     def test_body_over_25_lines(self):
-        from kalitui.profiles.curl import _summarize
+        from DeepKali.profiles.curl import _summarize
 
         body = "\n".join(f"line{i}" for i in range(40))
         out = _summarize(body + "\n200 12345", 100000)
         assert "共 40 行" in out
 
     def test_request_failed_branch(self):
-        from kalitui.profiles.curl import _summarize
+        from DeepKali.profiles.curl import _summarize
 
         out = _summarize("curl: (7) Failed to connect", 4000)
         assert "请求失败" in out
@@ -3198,7 +3198,7 @@ class TestCurlExtra:
 class TestAircrackUncracked:
     @pytest.mark.asyncio
     async def test_not_cracked_branch(self, monkeypatch, tmp_path):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3226,7 +3226,7 @@ class TestAircrackUncracked:
 class TestAirmonNoIface:
     @pytest.mark.asyncio
     async def test_no_iface_branch(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3254,7 +3254,7 @@ class TestAirmonNoIface:
 # ---------------------------------------------------------------------------
 class TestSearchsploitExtra:
     def test_check_keyword_errors(self):
-        from kalitui.profiles.searchsploit import _check_keyword
+        from DeepKali.profiles.searchsploit import _check_keyword
 
         with pytest.raises(ValueError):
             _check_keyword("   ")
@@ -3266,7 +3266,7 @@ class TestSearchsploitExtra:
 
     @pytest.mark.asyncio
     async def test_show_not_installed_and_bad_id_and_preview(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3308,7 +3308,7 @@ class TestSearchsploitExtra:
 
     @pytest.mark.asyncio
     async def test_search_over_25_hits(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3337,7 +3337,7 @@ class TestSearchsploitExtra:
 # ---------------------------------------------------------------------------
 class TestEnum4linuxBranches:
     def test_summarize_shares_groups_empty(self):
-        from kalitui.profiles.enum4linux import _summarize
+        from DeepKali.profiles.enum4linux import _summarize
 
         out = _summarize("[+] Sharename       Type   Comment\n"
                          "[+] ---------       ----   -------\n"
@@ -3351,7 +3351,7 @@ class TestEnum4linuxBranches:
 
 class TestEvilWinrmBadUsername:
     def test_bad_username(self):
-        from kalitui.profiles.evilwinrm import _build_cmd
+        from DeepKali.profiles.evilwinrm import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"host": "10.0.0.9", "username": "bad user!"})
@@ -3359,14 +3359,14 @@ class TestEvilWinrmBadUsername:
 
 class TestFfufBranches:
     def test_bad_match_codes(self):
-        from kalitui.profiles.ffuf import _build_cmd
+        from DeepKali.profiles.ffuf import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"url": "http://x/FUZZ", "wordlist": "/usr/share/wordlists/dirb/common.txt",
                         "match_codes": "abc"})
 
     def test_summarize_over_50_hits(self):
-        from kalitui.profiles.ffuf import _summarize
+        from DeepKali.profiles.ffuf import _summarize
 
         raw = "".join(f"admin{i} [Status: 200, Size: 100]\n" for i in range(60))
         out = _summarize(raw)
@@ -3375,7 +3375,7 @@ class TestFfufBranches:
 
 class TestFtpBranches:
     def test_bad_creds(self):
-        from kalitui.profiles.ftp import _build_cmd
+        from DeepKali.profiles.ftp import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"host": "10.0.0.9", "username": "bad user!"})
@@ -3383,7 +3383,7 @@ class TestFtpBranches:
             _build_cmd({"host": "10.0.0.9", "password": "bad pass!"})
 
     def test_summarize_over_30_entries(self):
-        from kalitui.profiles.ftp import _summarize
+        from DeepKali.profiles.ftp import _summarize
 
         out = _summarize("\n".join(f"file{i}.bak" for i in range(40)))
         assert "共 40 项" in out
@@ -3391,7 +3391,7 @@ class TestFtpBranches:
 
 class TestGetNPUsersBranches:
     def test_build_cmd_branches(self, monkeypatch):
-        import kalitui.profiles.getnpusers as G
+        import DeepKali.profiles.getnpusers as G
 
         with pytest.raises(ValueError):
             G._build_cmd({"domain": "corp.local", "username": "bad user!"})
@@ -3406,7 +3406,7 @@ class TestGetNPUsersBranches:
 
 class TestGetUserSPNsBranches:
     def test_build_cmd_branches(self, monkeypatch):
-        import kalitui.profiles.getuserspns as G
+        import DeepKali.profiles.getuserspns as G
 
         with pytest.raises(ValueError):
             G._build_cmd({"domain": "corp.local", "username": "john",
@@ -3425,14 +3425,14 @@ class TestGetUserSPNsBranches:
 # ---------------------------------------------------------------------------
 class TestGobusterBranches:
     def test_bad_status_codes(self):
-        from kalitui.profiles.gobuster import _build_cmd
+        from DeepKali.profiles.gobuster import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"url": "http://x:80/", "wordlist": "/usr/share/wordlists/dirb/common.txt",
                         "status_codes": "abc"})
 
     def test_summarize_over_40(self):
-        from kalitui.profiles.gobuster import _summarize
+        from DeepKali.profiles.gobuster import _summarize
 
         raw = "".join(f"/admin{i} (Status: 200) [Size: 100]\n" for i in range(50))
         out = _summarize(raw)
@@ -3442,7 +3442,7 @@ class TestGobusterBranches:
 class TestHping3Exec:
     @pytest.mark.asyncio
     async def test_exec_success_path(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3466,7 +3466,7 @@ class TestHping3Exec:
 
 class TestHttpxBranches:
     def test_parse_skip_non_result_lines(self):
-        from kalitui.profiles.httpx import _parse
+        from DeepKali.profiles.httpx import _parse
 
         rows = _parse("\n"  # 空行跳过
                       "not a result line\n"
@@ -3476,7 +3476,7 @@ class TestHttpxBranches:
 
     @pytest.mark.asyncio
     async def test_exec_no_targets_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3504,7 +3504,7 @@ class TestHttpxBranches:
 # ---------------------------------------------------------------------------
 class TestLdapsearchExtra:
     def test_bad_attrs_and_creds(self):
-        from kalitui.profiles.ldapsearch import _build_cmd
+        from DeepKali.profiles.ldapsearch import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"host": "10.0.0.9", "attributes": "bad attr!"})
@@ -3513,7 +3513,7 @@ class TestLdapsearchExtra:
 
     @pytest.mark.asyncio
     async def test_over_30_dns(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3538,14 +3538,14 @@ class TestLdapsearchExtra:
 
 class TestLinpeasExtra:
     def test_parse_empty_line_skip(self):
-        from kalitui.profiles.linpeas import _parse
+        from DeepKali.profiles.linpeas import _parse
 
         plus, warns = _parse("\n\n   \nnormal line\n[+] \n[+] real find\n")
         assert plus == ["real find"] and warns == []
 
     @pytest.mark.asyncio
     async def test_over_25_plus_lines(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3570,14 +3570,14 @@ class TestLinpeasExtra:
 
 class TestMacchangerExtra:
     def test_bad_action(self):
-        from kalitui.profiles.macchanger import _build_cmd
+        from DeepKali.profiles.macchanger import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"interface": "eth0", "action": "fly"})
 
     @pytest.mark.asyncio
     async def test_exec_macs_and_fallback(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3613,7 +3613,7 @@ class TestMacchangerExtra:
 # ---------------------------------------------------------------------------
 class TestHydraExtraBranches:
     def test_service_options_too_long(self):
-        from kalitui.profiles.hydra import _build_cmd
+        from DeepKali.profiles.hydra import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"target": "10.0.0.9", "protocol": "http-post-form",
@@ -3630,7 +3630,7 @@ class TestHydraExtraBranches:
 
     @pytest.mark.asyncio
     async def test_no_hit_branch(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3656,7 +3656,7 @@ class TestHydraExtraBranches:
 
 class TestImpExecExtraBranches:
     def test_build_cmd_branches(self, monkeypatch):
-        import kalitui.profiles.impexec as I
+        import DeepKali.profiles.impexec as I
 
         with pytest.raises(ValueError):
             I._build_cmd({"host": "10.0.0.9", "username": "bad user!"})
@@ -3676,7 +3676,7 @@ class TestImpExecExtraBranches:
 
 class TestNucleiExtraBranches:
     def test_bad_tags_and_templates(self):
-        from kalitui.profiles.nuclei import _build_cmd
+        from DeepKali.profiles.nuclei import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"target": "http://x", "tags": "bad tag!"})
@@ -3687,7 +3687,7 @@ class TestNucleiExtraBranches:
 
     @pytest.mark.asyncio
     async def test_over_30_hits(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3715,7 +3715,7 @@ class TestNucleiExtraBranches:
 # ---------------------------------------------------------------------------
 class TestMsfvenomExtra3:
     def test_encoder_arch_platform(self):
-        from kalitui.profiles.msfvenom import _build_cmd
+        from DeepKali.profiles.msfvenom import _build_cmd
 
         base = {"payload": "linux/x64/shell/reverse_tcp",
                 "lhost": "10.0.0.5", "lport": 4444}
@@ -3735,7 +3735,7 @@ class TestMsfvenomExtra3:
 
     @pytest.mark.asyncio
     async def test_exec_generation_failed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3762,7 +3762,7 @@ class TestMsfvenomExtra3:
 
 class TestMsfExtra2:
     def test_options_not_dict_and_bad_key(self):
-        from kalitui.profiles.msf import _build_script
+        from DeepKali.profiles.msf import _build_script
 
         with pytest.raises(ValueError):
             _build_script({"module": "exploit/x", "options": "not-a-dict"}, search=False)
@@ -3772,7 +3772,7 @@ class TestMsfExtra2:
 
 class TestNetcatExtra2:
     def test_bin_fallback_and_bad_data(self):
-        import kalitui.profiles.netcat as N
+        import DeepKali.profiles.netcat as N
 
         monkeypatch = None
         # 直接改模块属性再恢复
@@ -3783,14 +3783,14 @@ class TestNetcatExtra2:
         assert N._nc_bin() in ("ncat", "nc")
         N.check_installed = orig
 
-        from kalitui.profiles.netcat import _DATA_RE
+        from DeepKali.profiles.netcat import _DATA_RE
         assert _DATA_RE.match("safe data") is not None
         assert _DATA_RE.match("bad\x00data") is None
         assert _DATA_RE.match("safe;rm -rf /") is not None  # 分号合法：_escape_data 单引号包裹防注入
 
     @pytest.mark.asyncio
     async def test_exec_connect_bad_data(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3810,7 +3810,7 @@ class TestNetcatExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_received_data(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3841,7 +3841,7 @@ class TestNetcatExtra2:
 # ---------------------------------------------------------------------------
 class TestNetdiscoverOver30:
     def test_summarize_over_30_hosts(self):
-        from kalitui.profiles.netdiscover import _summarize
+        from DeepKali.profiles.netdiscover import _summarize
 
         raw = "".join(f"{i}  10.0.0.{i}   aa:bb:cc:dd:ee:00  host{i}\n" for i in range(35))
         out = _summarize(raw)
@@ -3850,7 +3850,7 @@ class TestNetdiscoverOver30:
 
 class TestNfsExtra2:
     def test_build_cmd_error_lines(self):
-        from kalitui.profiles.nfs import _build_cmd, _parse
+        from DeepKali.profiles.nfs import _build_cmd, _parse
 
         cmd = _build_cmd("10.0.0.9")
         assert "showmount -e 10.0.0.9" in cmd
@@ -3862,7 +3862,7 @@ class TestNfsExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_over_20(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3887,14 +3887,14 @@ class TestNfsExtra2:
 
 class TestNiktoExtra2:
     def test_bad_tuning(self):
-        from kalitui.profiles.nikto import _build_cmd
+        from DeepKali.profiles.nikto import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"target": "http://x", "tuning": "xyz"})
 
     @pytest.mark.asyncio
     async def test_exec_over_40(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3919,7 +3919,7 @@ class TestNiktoExtra2:
 
 class TestNmapExtra3:
     def test_summarize_os_and_ports(self):
-        from kalitui.profiles.nmap import _summarize
+        from DeepKali.profiles.nmap import _summarize
 
         raw = ("Nmap scan report for 10.0.0.9\n"
                "OS details: Linux 5.4\n"
@@ -3929,7 +3929,7 @@ class TestNmapExtra3:
         assert "共 40 个开放端口" in out
 
     def test_summarize_no_ports(self):
-        from kalitui.profiles.nmap import _summarize
+        from DeepKali.profiles.nmap import _summarize
 
         out = _summarize("Nmap done: 1 IP address scanned")
         assert "未发现开放端口" in out
@@ -3938,7 +3938,7 @@ class TestNmapExtra3:
 class TestRedisExtra2:
     @pytest.mark.asyncio
     async def test_exec_success_branch(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3962,7 +3962,7 @@ class TestRedisExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_noauth_branch(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -3987,7 +3987,7 @@ class TestRedisExtra2:
 
 class TestResponderExtra2:
     def test_summarize_with_requests(self):
-        from kalitui.profiles.responder import _summarize
+        from DeepKali.profiles.responder import _summarize
 
         raw = ("[+] Listening for events...\n"
                "[+] [HTTP] v10.0.0.9:80  Client     : 10.0.0.9  Username: ADMIN\n"
@@ -3999,7 +3999,7 @@ class TestResponderExtra2:
 class TestRsyncExtra2:
     @pytest.mark.asyncio
     async def test_exec_over_20(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4022,7 +4022,7 @@ class TestRsyncExtra2:
         assert "共 25 个" in out
 
     def test_parse_error_lines_skipped(self):
-        from kalitui.profiles.rsync import _parse
+        from DeepKali.profiles.rsync import _parse
 
         mods = _parse("rsync: connection unexpectedly closed\n"
                       "\n"
@@ -4035,7 +4035,7 @@ class TestRsyncExtra2:
 # ---------------------------------------------------------------------------
 class TestDnsreconOver40:
     def test_summarize_over_40(self):
-        from kalitui.profiles.dnsrecon import _summarize
+        from DeepKali.profiles.dnsrecon import _summarize
 
         raw = "".join(f"2026-01-01T00:00:00.0 INFO \t A sub{i}.example.com 10.0.0.{i}\n"
                       for i in range(50))
@@ -4046,7 +4046,7 @@ class TestDnsreconOver40:
 class TestSecretScanExtra:
     @pytest.mark.asyncio
     async def test_exec_hits_cap(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4073,7 +4073,7 @@ class TestSecretScanExtra:
 class TestSecretsdumpExtra:
     @pytest.mark.asyncio
     async def test_exec_no_hashes(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4096,7 +4096,7 @@ class TestSecretsdumpExtra:
         assert "未提取到 hash" in out
 
     def test_build_cmd_branches(self, monkeypatch):
-        import kalitui.profiles.secretsdump as S
+        import DeepKali.profiles.secretsdump as S
 
         with pytest.raises(ValueError):
             S._build_cmd({"host": "10.0.0.9", "username": "bad user!"})
@@ -4118,7 +4118,7 @@ class TestSecretsdumpExtra:
 
     @pytest.mark.asyncio
     async def test_exec_over_25_hashes(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4145,7 +4145,7 @@ class TestSecretsdumpExtra:
 class TestSmbclientExtra2:
     @pytest.mark.asyncio
     async def test_exec_entries_branch(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4170,7 +4170,7 @@ class TestSmbclientExtra2:
         assert "目录内容" in out and "secret.txt" in out
 
     def test_build_cmd_bad_values(self):
-        from kalitui.profiles.smbclient import _build_cmd
+        from DeepKali.profiles.smbclient import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"host": "10.0.0.9", "share": "share", "username": "bad user!"})
@@ -4186,7 +4186,7 @@ class TestSmbclientExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_denied_branch(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4215,7 +4215,7 @@ class TestSmbclientExtra2:
 class TestSmbmapExtra2:
     @pytest.mark.asyncio
     async def test_exec_shares_and_files(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4242,7 +4242,7 @@ class TestSmbmapExtra2:
 
 class TestSmtpenumExtra2:
     def test_bad_domain(self):
-        from kalitui.profiles.smtpenum import _build_cmd
+        from DeepKali.profiles.smtpenum import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"host": "10.0.0.9", "domain": "bad dom!"})
@@ -4251,7 +4251,7 @@ class TestSmtpenumExtra2:
 class TestSnmpExtra2:
     @pytest.mark.asyncio
     async def test_exec_over_15(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4277,7 +4277,7 @@ class TestSnmpExtra2:
 
 class TestSqlmapExtra2:
     def test_bad_cookie(self):
-        from kalitui.profiles.sqlmap import _build_cmd
+        from DeepKali.profiles.sqlmap import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"url": "http://t.com/?id=1", "cookie": "bad\x00cookie"})
@@ -4285,7 +4285,7 @@ class TestSqlmapExtra2:
 
 class TestSslscanExtra2:
     def test_summarize_over_20_proto(self):
-        from kalitui.profiles.sslscan import _summarize
+        from DeepKali.profiles.sslscan import _summarize
 
         raw = "".join(f"TLSv1.2  256 bits  AES256-GCM-SHA384 p{i}\n" for i in range(25))
         out = _summarize(raw)
@@ -4293,7 +4293,7 @@ class TestSslscanExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_full_path(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4318,7 +4318,7 @@ class TestSslscanExtra2:
 
 class TestTcpdumpExtra2:
     def test_summarize_over_25(self):
-        from kalitui.profiles.tcpdump import _summarize
+        from DeepKali.profiles.tcpdump import _summarize
 
         raw = ("".join(f"12:00:00.000000 IP 10.0.0.{i}.1 > 10.0.0.9.80: Flags [S]\n"
                       for i in range(30))
@@ -4332,7 +4332,7 @@ class TestTcpdumpExtra2:
 # ---------------------------------------------------------------------------
 class TestTestsslExtra2:
     def test_bin_fallback(self, monkeypatch):
-        import kalitui.profiles.testssl as T
+        import DeepKali.profiles.testssl as T
 
         monkeypatch.setattr(T, "check_installed", lambda t: False)
         monkeypatch.setattr("os.path.exists", lambda p: False)
@@ -4344,7 +4344,7 @@ class TestTestsslExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_full_path(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4370,7 +4370,7 @@ class TestTestsslExtra2:
 
 class TestTheharvesterExtra2:
     def test_summarize_over_30(self):
-        from kalitui.profiles.theharvester import _summarize
+        from DeepKali.profiles.theharvester import _summarize
 
         raw = "".join(f"[*] Hosts found: {i}\n  host{i}.example.com\n" for i in range(35))
         out = _summarize(raw)
@@ -4378,7 +4378,7 @@ class TestTheharvesterExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_full_path(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4403,13 +4403,13 @@ class TestTheharvesterExtra2:
 
 class TestTsharkExtra2:
     def test_bad_interface(self):
-        from kalitui.profiles.tshark import _build_cmd
+        from DeepKali.profiles.tshark import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"interface": "bad iface!"})
 
     def test_summarize_over_30(self):
-        from kalitui.profiles.tshark import _summarize
+        from DeepKali.profiles.tshark import _summarize
 
         raw = "".join(f"{i}\t0.000000\t10.0.0.{i}.1\t10.0.0.9\tTCP\t60\t443 -> 51234 [SYN]\n"
                       for i in range(35))
@@ -4418,7 +4418,7 @@ class TestTsharkExtra2:
 
     @pytest.mark.asyncio
     async def test_exec_full_path(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             def __init__(self):
@@ -4446,7 +4446,7 @@ class TestTsharkExtra2:
 # ---------------------------------------------------------------------------
 class TestWfuzzExtra2:
     def test_build_cmd_code_branches(self):
-        from kalitui.profiles.wfuzz import _build_cmd
+        from DeepKali.profiles.wfuzz import _build_cmd
 
         base = {"url": "http://x/FUZZ", "wordlist": "/tmp/w.txt"}
         with pytest.raises(ValueError):
@@ -4459,7 +4459,7 @@ class TestWfuzzExtra2:
             _build_cmd({**base, "cookie": "bad\x00cookie"})
 
     def test_summarize_rows_and_empty(self):
-        from kalitui.profiles.wfuzz import _summarize
+        from DeepKali.profiles.wfuzz import _summarize
 
         raw = "".join(f"{i}: 200  Words: 12  Lines: 1  /path{i}\n" for i in range(35))
         out = _summarize(raw)
@@ -4473,7 +4473,7 @@ class TestWfuzzExtra2:
 
 class TestWpscanExtra2:
     def test_summarize_finds_and_vulns(self):
-        from kalitui.profiles.wpscan import _summarize
+        from DeepKali.profiles.wpscan import _summarize
 
         raw = ("[+] WordPress version 6.4.3 identified\n"
                "| [!] Title: XSS in plugin X\n")
@@ -4488,7 +4488,7 @@ class TestWpscanExtra2:
 # ---------------------------------------------------------------------------
 class TestPlaybookParsers2:
     def test_parse_ports_bad_line(self):
-        from kalitui.profiles.playbook import _parse_ports
+        from DeepKali.profiles.playbook import _parse_ports
 
         # "abc/tcp open" 过 re_search_port 但 int 解析失败 → 跳过
         raw = "abc/tcp open http\n80/tcp open http Apache 2.4\n"
@@ -4496,7 +4496,7 @@ class TestPlaybookParsers2:
         assert ports == [(80, "http", "Apache 2.4")]
 
     def test_parse_nuclei_empty_lines(self):
-        from kalitui.profiles.playbook import _parse_nuclei
+        from DeepKali.profiles.playbook import _parse_nuclei
 
         hits = _parse_nuclei("\n\n[critical] CVE-2024-1 X\n\n[high] CVE-2024-2 Y\n")
         assert len(hits) == 2
@@ -4505,7 +4505,7 @@ class TestPlaybookParsers2:
 class TestPlaybookPipeline:
     @pytest.mark.asyncio
     async def test_recon_pipeline_full(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4529,7 +4529,7 @@ class TestPlaybookPipeline:
     @pytest.mark.asyncio
     async def test_bounty_no_ports_closing(self, monkeypatch):
         """nmap 无端口 → 收尾建议分支。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4550,7 +4550,7 @@ class TestPlaybookPipeline:
 
     @pytest.mark.asyncio
     async def test_bounty_empty_target(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4570,7 +4570,7 @@ class TestBountyExtraBranches:
     @pytest.mark.asyncio
     async def test_subenum_curl_missing(self, monkeypatch):
         """curl 未安装 → sub_enum 跳过提示。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4593,7 +4593,7 @@ class TestBountyExtraBranches:
     @pytest.mark.asyncio
     async def test_subenum_over25_and_httpx_fail(self, monkeypatch):
         """crtsh 返回 >25 子域 + httpx 解析抛异常容错。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4622,7 +4622,7 @@ class TestBountyExtraBranches:
     @pytest.mark.asyncio
     async def test_gobuster_except_and_no_ports(self, monkeypatch):
         """gobuster 构建命令抛异常 → 目录枚举失败容错；无端口收尾建议。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4648,7 +4648,7 @@ class TestBountyExtraBranches:
     @pytest.mark.asyncio
     async def test_nuclei_except_and_skipped(self, monkeypatch):
         """vuln_scan：nuclei 抛异常 → 容错；nuclei 未装 → 跳过提示。"""
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4694,7 +4694,7 @@ class TestBountyExtraBranches:
 # ---------------------------------------------------------------------------
 class TestCveLookup:
     def test_build_cmd_branches(self):
-        from kalitui.profiles.cve_lookup import _build_cmd
+        from DeepKali.profiles.cve_lookup import _build_cmd
 
         with pytest.raises(ValueError):
             _build_cmd({"cve_id": "CVE-2024"})
@@ -4710,7 +4710,7 @@ class TestCveLookup:
         assert "/search/apache/tomcat" in cmd2
 
     def test_parse_detail_branches(self):
-        from kalitui.profiles.cve_lookup import _parse_detail
+        from DeepKali.profiles.cve_lookup import _parse_detail
 
         assert _parse_detail("not json") == {}
         assert _parse_detail("[]") == {}
@@ -4722,7 +4722,7 @@ class TestCveLookup:
         assert d["refs"] == 2 and d["cwe"] == "CWE-78"
 
     def test_parse_search_branches(self):
-        from kalitui.profiles.cve_lookup import _parse_search
+        from DeepKali.profiles.cve_lookup import _parse_search
 
         assert _parse_search("nope") == []
         assert _parse_search('{"a": 1}') == []  # 非列表 JSON
@@ -4734,7 +4734,7 @@ class TestCveLookup:
 
     @pytest.mark.asyncio
     async def test_exec_detail_and_miss(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4767,7 +4767,7 @@ class TestCveLookup:
 
     @pytest.mark.asyncio
     async def test_exec_search_rows(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4810,7 +4810,7 @@ class TestCveLookup:
 
     @pytest.mark.asyncio
     async def test_exec_not_installed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4831,7 +4831,7 @@ class TestCveLookup:
 # ---------------------------------------------------------------------------
 class TestReportGen:
     def test_build_report_validation(self):
-        from kalitui.profiles.report_gen import _build_report
+        from DeepKali.profiles.report_gen import _build_report
 
         with pytest.raises(ValueError):
             _build_report({"title": "", "target": "x"})
@@ -4848,7 +4848,7 @@ class TestReportGen:
                            "findings": [{"title": "a", "severity": "high"}] * 21})
 
     def test_build_report_sort_and_clean(self):
-        from kalitui.profiles.report_gen import _build_report
+        from DeepKali.profiles.report_gen import _build_report
 
         r = _build_report({
             "title": "测试报告", "target": "10.0.0.9", "severity": "high",
@@ -4871,7 +4871,7 @@ class TestReportGen:
 
     @pytest.mark.asyncio
     async def test_exec_writes_file(self, monkeypatch, tmp_path):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4894,7 +4894,7 @@ class TestReportGen:
         assert "2024-01-01 00:00" in content
 
     def test_check_output(self):
-        from kalitui.profiles.report_gen import _check_output
+        from DeepKali.profiles.report_gen import _check_output
 
         with pytest.raises(ValueError):
             _check_output("/etc/passwd")
@@ -4911,14 +4911,14 @@ class TestReportGen:
 # ---------------------------------------------------------------------------
 class TestWebLeak:
     def test_build_cmd_quoting(self):
-        from kalitui.profiles.web_leak import _build_cmd
+        from DeepKali.profiles.web_leak import _build_cmd
 
         cmd = _build_cmd("http://t.com", ["/.env", "/backup.zip"])
         assert "'http://t.com$p'" in cmd and "'/.env'" in cmd and "'/backup.zip'" in cmd
         assert "%{http_code}" in cmd and "%{size_download}" in cmd
 
     def test_parse_probe(self):
-        from kalitui.profiles.web_leak import _parse_probe
+        from DeepKali.profiles.web_leak import _parse_probe
 
         hits = _parse_probe(
             "200 1234 /.env\n404 0 /nope\n000 0 /timeout\n"
@@ -4929,7 +4929,7 @@ class TestWebLeak:
         assert _parse_probe("junk line\n") == []
 
     def test_parse_robots(self):
-        from kalitui.profiles.web_leak import _parse_robots
+        from DeepKali.profiles.web_leak import _parse_robots
 
         dis = _parse_robots(
             "User-agent: *\nDisallow: /admin/\nDisallow: /internal\n"
@@ -4939,7 +4939,7 @@ class TestWebLeak:
 
     @pytest.mark.asyncio
     async def test_exec_hits_and_robots(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4963,7 +4963,7 @@ class TestWebLeak:
 
     @pytest.mark.asyncio
     async def test_exec_no_hits(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -4983,7 +4983,7 @@ class TestWebLeak:
 
     @pytest.mark.asyncio
     async def test_exec_bad_inputs(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5014,7 +5014,7 @@ class TestWebLeak:
 # ---------------------------------------------------------------------------
 class TestHeaderCheck:
     def test_build_cmd(self):
-        from kalitui.profiles.header_check import _build_cmd
+        from DeepKali.profiles.header_check import _build_cmd
 
         cmd = _build_cmd("http://t.com/")
         assert "-D - -o /dev/null" in cmd and "'http://t.com/'" in cmd
@@ -5023,7 +5023,7 @@ class TestHeaderCheck:
         assert "Origin: http://evil.com" in cmd2
 
     def test_parse_headers(self):
-        from kalitui.profiles.header_check import _parse_headers
+        from DeepKali.profiles.header_check import _parse_headers
 
         h = _parse_headers(
             "HTTP/1.1 200 OK\nServer: nginx/1.18.0\nX-Frame-Options: DENY\n"
@@ -5035,7 +5035,7 @@ class TestHeaderCheck:
 
     @pytest.mark.asyncio
     async def test_exec_missing_headers_and_cors_reflect(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5062,7 +5062,7 @@ class TestHeaderCheck:
 
     @pytest.mark.asyncio
     async def test_exec_all_good(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5088,7 +5088,7 @@ class TestHeaderCheck:
 
     @pytest.mark.asyncio
     async def test_exec_cors_fixed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5109,7 +5109,7 @@ class TestHeaderCheck:
 
     @pytest.mark.asyncio
     async def test_exec_bad_url(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5130,7 +5130,7 @@ class TestHeaderCheck:
 # ---------------------------------------------------------------------------
 class TestHttpMethods:
     def test_build_cmd_and_parse(self):
-        from kalitui.profiles.http_methods import _build_cmd, _parse_allow, _parse_status
+        from DeepKali.profiles.http_methods import _build_cmd, _parse_allow, _parse_status
 
         cmd = _build_cmd("http://t.com/", "OPTIONS")
         assert "-X OPTIONS" in cmd and "'http://t.com/'" in cmd
@@ -5142,7 +5142,7 @@ class TestHttpMethods:
 
     @pytest.mark.asyncio
     async def test_exec_risky_methods(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5167,7 +5167,7 @@ class TestHttpMethods:
 
     @pytest.mark.asyncio
     async def test_exec_safe_and_put(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5207,7 +5207,7 @@ class TestHttpMethods:
 
     @pytest.mark.asyncio
     async def test_exec_bad_url(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5228,7 +5228,7 @@ class TestHttpMethods:
 # ---------------------------------------------------------------------------
 class TestJwtCheck:
     def test_parse_and_analyze(self):
-        from kalitui.profiles.jwt_check import _analyze, _parse, _make_token
+        from DeepKali.profiles.jwt_check import _analyze, _parse, _make_token
 
         h, p, sig = _parse(_make_token({"alg": "RS256"}, {"sub": "u1"}))
         assert h["alg"] == "RS256" and p["sub"] == "u1" and sig is True
@@ -5259,8 +5259,8 @@ class TestJwtCheck:
 
     @pytest.mark.asyncio
     async def test_exec_valid_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
-        from kalitui.profiles.jwt_check import _make_token
+        from DeepKali import profiles as P
+        from DeepKali.profiles.jwt_check import _make_token
 
         class Stub:
             danger_policy = "ask"
@@ -5281,7 +5281,7 @@ class TestJwtCheck:
 
     @pytest.mark.asyncio
     async def test_exec_parse_fail_and_format(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5305,7 +5305,7 @@ class TestJwtCheck:
 # ---------------------------------------------------------------------------
 class TestOpenRedirect:
     def test_build_cmd_and_parse(self):
-        from kalitui.profiles.open_redirect import _build_cmd, _parse_code, _parse_location
+        from DeepKali.profiles.open_redirect import _build_cmd, _parse_code, _parse_location
 
         cmd = _build_cmd("http://t.com/login", "next")
         assert "?next=http://evil.com" in cmd and "'http://t.com/login" in cmd
@@ -5319,7 +5319,7 @@ class TestOpenRedirect:
 
     @pytest.mark.asyncio
     async def test_exec_hit_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5356,7 +5356,7 @@ class TestOpenRedirect:
 
     @pytest.mark.asyncio
     async def test_exec_bad_inputs(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5403,7 +5403,7 @@ class TestOpenRedirect:
 # ---------------------------------------------------------------------------
 class TestEmailAuth:
     def test_build_cmd_and_parse(self):
-        from kalitui.profiles.email_auth import _build_cmd, _parse_txt
+        from DeepKali.profiles.email_auth import _build_cmd, _parse_txt
 
         assert _build_cmd("example.com", "") == "dig +short TXT example.com"
         assert _build_cmd("example.com", "_dmarc") == "dig +short TXT _dmarc.example.com"
@@ -5414,7 +5414,7 @@ class TestEmailAuth:
         assert _parse_txt("") == ""
 
     def test_analyze_branches(self):
-        from kalitui.profiles.email_auth import _analyze
+        from DeepKali.profiles.email_auth import _analyze
 
         out = _analyze("example.com", "", "")
         assert "SPF: 缺失" in out and "DMARC: 缺失" in out
@@ -5432,7 +5432,7 @@ class TestEmailAuth:
 
     @pytest.mark.asyncio
     async def test_exec_full(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5454,7 +5454,7 @@ class TestEmailAuth:
 
     @pytest.mark.asyncio
     async def test_exec_bad_inputs(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5478,7 +5478,7 @@ class TestEmailAuth:
 # ---------------------------------------------------------------------------
 class TestWhoisLookup:
     def test_parse_fields(self):
-        from kalitui.profiles.whois_lookup import _parse
+        from DeepKali.profiles.whois_lookup import _parse
 
         raw = (
             "Domain Name: EXAMPLE.COM\n"
@@ -5503,7 +5503,7 @@ class TestWhoisLookup:
 
     @pytest.mark.asyncio
     async def test_exec_full_and_empty(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5536,7 +5536,7 @@ class TestWhoisLookup:
 
     @pytest.mark.asyncio
     async def test_exec_bad_inputs(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5562,7 +5562,7 @@ class TestWhoisLookup:
 # ---------------------------------------------------------------------------
 class TestSubTakeover:
     def test_parse_cname_and_fingerprint(self):
-        from kalitui.profiles.sub_takeover import _fingerprint, _parse_cname
+        from DeepKali.profiles.sub_takeover import _fingerprint, _parse_cname
 
         assert _parse_cname("blog.example.com. 300 IN CNAME user.github.io.\n") == \
             "user.github.io"
@@ -5580,7 +5580,7 @@ class TestSubTakeover:
 
     @pytest.mark.asyncio
     async def test_exec_hits_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5621,7 +5621,7 @@ class TestSubTakeover:
 
     @pytest.mark.asyncio
     async def test_exec_no_subs_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5647,7 +5647,7 @@ class TestSubTakeover:
 # ---------------------------------------------------------------------------
 class TestPageScan:
     def test_extract_and_filter(self):
-        from kalitui.profiles.page_scan import _extract_comments, _filter_comments
+        from DeepKali.profiles.page_scan import _extract_comments, _filter_comments
 
         raw = ("<html><!-- admin panel at /internal/login -->\n"
                "<p>hi</p><!-- 正常注释 -->\n"
@@ -5663,7 +5663,7 @@ class TestPageScan:
 
     @pytest.mark.asyncio
     async def test_exec_hits_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5707,7 +5707,7 @@ class TestPageScan:
 
     @pytest.mark.asyncio
     async def test_exec_truncate_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5733,7 +5733,7 @@ class TestPageScan:
 # ---------------------------------------------------------------------------
 class TestPathTraversal:
     def test_payloads_and_detect(self):
-        from kalitui.profiles.path_traversal import (
+        from DeepKali.profiles.path_traversal import (
             _DEFAULT_PAYLOADS, _is_passwd_hit)
 
         assert len(_DEFAULT_PAYLOADS) == 8
@@ -5745,7 +5745,7 @@ class TestPathTraversal:
 
     @pytest.mark.asyncio
     async def test_exec_hit_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5780,7 +5780,7 @@ class TestPathTraversal:
 
     @pytest.mark.asyncio
     async def test_exec_custom_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5829,7 +5829,7 @@ class TestPathTraversal:
 # ---------------------------------------------------------------------------
 class TestCmdInject:
     def test_payloads_and_detect(self):
-        from kalitui.profiles.cmd_inject import _DEFAULT_PAYLOADS, _is_inject_hit
+        from DeepKali.profiles.cmd_inject import _DEFAULT_PAYLOADS, _is_inject_hit
 
         assert len(_DEFAULT_PAYLOADS) == 8
         assert _is_inject_hit("uid=33(www-data) gid=33(www-data)\n") is True
@@ -5839,7 +5839,7 @@ class TestCmdInject:
 
     @pytest.mark.asyncio
     async def test_exec_hit_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5876,7 +5876,7 @@ class TestCmdInject:
 
     @pytest.mark.asyncio
     async def test_exec_custom_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5921,7 +5921,7 @@ class TestCmdInject:
 # ---------------------------------------------------------------------------
 class TestSsrfCheck:
     def test_payloads_and_meta(self):
-        from kalitui.profiles.ssrf_check import _DEFAULT_PAYLOADS, _is_meta_hit
+        from DeepKali.profiles.ssrf_check import _DEFAULT_PAYLOADS, _is_meta_hit
 
         assert len(_DEFAULT_PAYLOADS) == 9
         assert any("169.254.169.254" in p for p in _DEFAULT_PAYLOADS)
@@ -5931,7 +5931,7 @@ class TestSsrfCheck:
 
     @pytest.mark.asyncio
     async def test_exec_meta_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5957,7 +5957,7 @@ class TestSsrfCheck:
 
     @pytest.mark.asyncio
     async def test_exec_diff_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -5993,7 +5993,7 @@ class TestSsrfCheck:
 
     @pytest.mark.asyncio
     async def test_exec_bad_inputs(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6029,7 +6029,7 @@ class TestSsrfCheck:
 # ---------------------------------------------------------------------------
 class TestXxeCheck:
     def test_payloads_and_detect(self):
-        from kalitui.profiles.xxe_check import _DEFAULT_PAYLOADS, _is_xxe_hit
+        from DeepKali.profiles.xxe_check import _DEFAULT_PAYLOADS, _is_xxe_hit
 
         assert len(_DEFAULT_PAYLOADS) == 3
         assert all("DOCTYPE" in p for p in _DEFAULT_PAYLOADS)
@@ -6039,7 +6039,7 @@ class TestXxeCheck:
 
     @pytest.mark.asyncio
     async def test_exec_hit_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6074,7 +6074,7 @@ class TestXxeCheck:
 
     @pytest.mark.asyncio
     async def test_exec_custom_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6116,7 +6116,7 @@ class TestXxeCheck:
 # ---------------------------------------------------------------------------
 class TestXssCheck:
     def test_payloads_and_classify(self):
-        from kalitui.profiles.xss_check import _DEFAULT_PAYLOADS, _classify
+        from DeepKali.profiles.xss_check import _DEFAULT_PAYLOADS, _classify
 
         assert len(_DEFAULT_PAYLOADS) == 5
         assert _classify('x<script>alert(1)</script>y', '<script>alert(1)</script>') == "raw"
@@ -6126,7 +6126,7 @@ class TestXssCheck:
 
     @pytest.mark.asyncio
     async def test_exec_raw_and_encoded(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6161,7 +6161,7 @@ class TestXssCheck:
 
     @pytest.mark.asyncio
     async def test_exec_encoded_only(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6179,7 +6179,7 @@ class TestXssCheck:
 
     @pytest.mark.asyncio
     async def test_exec_bad_inputs(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6228,7 +6228,7 @@ class TestXssCheck:
 # ---------------------------------------------------------------------------
 class TestExifMeta:
     def test_parse_and_dms(self):
-        from kalitui.profiles.exif_meta import _dms_to_decimal, _parse
+        from DeepKali.profiles.exif_meta import _dms_to_decimal, _parse
 
         raw = (
             "File Name : photo.jpg\n"
@@ -6252,7 +6252,7 @@ class TestExifMeta:
 
     @pytest.mark.asyncio
     async def test_exec_with_gps(self, monkeypatch, tmp_path):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         img = tmp_path / "p.jpg"
         img.write_bytes(b"junk")
@@ -6275,7 +6275,7 @@ class TestExifMeta:
 
     @pytest.mark.asyncio
     async def test_exec_empty_and_bad(self, monkeypatch, tmp_path):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6320,7 +6320,7 @@ class TestExifMeta:
 # ---------------------------------------------------------------------------
 class TestCsrfCheck:
     def test_extract_forms(self):
-        from kalitui.profiles.csrf_check import _extract_forms, _has_token
+        from DeepKali.profiles.csrf_check import _extract_forms, _has_token
 
         raw = (
             '<form action="/change_pwd" method="POST">'
@@ -6341,7 +6341,7 @@ class TestCsrfCheck:
 
     @pytest.mark.asyncio
     async def test_exec_mixed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6368,7 +6368,7 @@ class TestCsrfCheck:
 
     @pytest.mark.asyncio
     async def test_exec_all_safe_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6422,7 +6422,7 @@ class TestCsrfCheck:
 # ---------------------------------------------------------------------------
 class TestErrorLeak:
     def test_find_leak(self):
-        from kalitui.profiles.error_leak import _find_leak
+        from DeepKali.profiles.error_leak import _find_leak
 
         assert "Traceback" in _find_leak("Traceback (most recent call last):\nFile /x.py") 
         assert "nginx" in _find_leak("Powered by nginx/1.18.0")
@@ -6433,7 +6433,7 @@ class TestErrorLeak:
 
     @pytest.mark.asyncio
     async def test_exec_leak_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6469,7 +6469,7 @@ class TestErrorLeak:
 
     @pytest.mark.asyncio
     async def test_exec_bad_url(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6493,7 +6493,7 @@ class TestErrorLeak:
 # ---------------------------------------------------------------------------
 class TestApiEnum:
     def test_build_and_parse(self):
-        from kalitui.profiles.api_enum import _build_cmd, _parse_probe
+        from DeepKali.profiles.api_enum import _build_cmd, _parse_probe
 
         cmd = _build_cmd("http://t.com", "/api/v1/users")
         assert "'http://t.com/api/v1/users'" in cmd
@@ -6503,7 +6503,7 @@ class TestApiEnum:
 
     @pytest.mark.asyncio
     async def test_exec_open_and_auth(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6529,7 +6529,7 @@ class TestApiEnum:
 
     @pytest.mark.asyncio
     async def test_exec_nothing_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6579,7 +6579,7 @@ class TestApiEnum:
 # ---------------------------------------------------------------------------
 class TestSshBanner:
     def test_parse_and_weak(self):
-        from kalitui.profiles.ssh_banner import (
+        from DeepKali.profiles.ssh_banner import (
             _check_weak, _parse_banner, _parse_version)
 
         assert _parse_banner("SSH-2.0-OpenSSH_7.2p2 Ubuntu-4ubuntu2.10\n") == \
@@ -6596,7 +6596,7 @@ class TestSshBanner:
 
     @pytest.mark.asyncio
     async def test_exec_weak_and_safe(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6627,7 +6627,7 @@ class TestSshBanner:
 
     @pytest.mark.asyncio
     async def test_exec_no_banner_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6655,7 +6655,7 @@ class TestSshBanner:
 # ---------------------------------------------------------------------------
 class TestDefaultPage:
     def test_match_defaults(self):
-        from kalitui.profiles.default_page import _match_defaults
+        from DeepKali.profiles.default_page import _match_defaults
 
         assert _match_defaults("<title>Welcome to nginx!</title>\n") == ["nginx 默认欢迎页"]
         assert _match_defaults("Apache2 Ubuntu Default Page: It works\n") == [
@@ -6666,7 +6666,7 @@ class TestDefaultPage:
 
     @pytest.mark.asyncio
     async def test_exec_hit_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6709,7 +6709,7 @@ class TestDefaultPage:
 
     @pytest.mark.asyncio
     async def test_exec_bad_url(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6733,7 +6733,7 @@ class TestDefaultPage:
 # ---------------------------------------------------------------------------
 class TestDirectoryList:
     def test_listing_detect(self):
-        from kalitui.profiles.directory_list import _is_listing
+        from DeepKali.profiles.directory_list import _is_listing
 
         assert _is_listing("<h1>Index of /backup</h1>\n<a href='a.zip'>") is True
         assert _is_listing("[To Parent Directory]  a.sql 2024-01-01") is True
@@ -6742,7 +6742,7 @@ class TestDirectoryList:
 
     @pytest.mark.asyncio
     async def test_exec_hit_and_clean(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6780,7 +6780,7 @@ class TestDirectoryList:
 
     @pytest.mark.asyncio
     async def test_exec_bad_inputs(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6829,7 +6829,7 @@ class TestDirectoryList:
 # ---------------------------------------------------------------------------
 class TestCookieCheck:
     def test_parse_and_analyze(self):
-        from kalitui.profiles.cookie_check import _analyze_cookie, _parse_cookies
+        from DeepKali.profiles.cookie_check import _analyze_cookie, _parse_cookies
 
         raw = (
             "HTTP/1.1 200 OK\n"
@@ -6857,7 +6857,7 @@ class TestCookieCheck:
 
     @pytest.mark.asyncio
     async def test_exec_mixed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6880,7 +6880,7 @@ class TestCookieCheck:
 
     @pytest.mark.asyncio
     async def test_exec_no_cookie_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6906,7 +6906,7 @@ class TestCookieCheck:
 # ---------------------------------------------------------------------------
 class TestUploadDetect:
     def test_extract_forms(self):
-        from kalitui.profiles.upload_detect import _extract_forms
+        from DeepKali.profiles.upload_detect import _extract_forms
 
         raw = (
             '<form action="/avatar" enctype="multipart/form-data">'
@@ -6925,7 +6925,7 @@ class TestUploadDetect:
 
     @pytest.mark.asyncio
     async def test_exec_with_upload(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -6949,7 +6949,7 @@ class TestUploadDetect:
 
     @pytest.mark.asyncio
     async def test_exec_nothing_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -7003,7 +7003,7 @@ class TestUploadDetect:
 # ---------------------------------------------------------------------------
 class TestJsExtract:
     def test_extract_scripts(self):
-        from kalitui.profiles.js_extract import _extract_scripts
+        from DeepKali.profiles.js_extract import _extract_scripts
 
         raw = (
             '<script src="/app.js"></script>\n'
@@ -7019,7 +7019,7 @@ class TestJsExtract:
 
     @pytest.mark.asyncio
     async def test_exec_mixed(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -7057,7 +7057,7 @@ class TestJsExtract:
 
     @pytest.mark.asyncio
     async def test_exec_none_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -7083,7 +7083,7 @@ class TestJsExtract:
 # ---------------------------------------------------------------------------
 class TestPlainLogin:
     def test_has_pwd_and_actions(self):
-        from kalitui.profiles.plain_login import _form_actions, _has_password_input
+        from DeepKali.profiles.plain_login import _form_actions, _has_password_input
 
         assert _has_password_input('<input type="password" name="pw">') is True
         assert _has_password_input("<input type=password>") is True
@@ -7095,7 +7095,7 @@ class TestPlainLogin:
 
     @pytest.mark.asyncio
     async def test_exec_http_plain(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -7115,7 +7115,7 @@ class TestPlainLogin:
 
     @pytest.mark.asyncio
     async def test_exec_https_and_bad_action(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -7134,7 +7134,7 @@ class TestPlainLogin:
 
     @pytest.mark.asyncio
     async def test_exec_no_pwd_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -7173,7 +7173,7 @@ class TestPlainLogin:
 class TestParamDiscover:
     @pytest.mark.asyncio
     async def test_exec_hit(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"
@@ -7197,7 +7197,7 @@ class TestParamDiscover:
 
     @pytest.mark.asyncio
     async def test_exec_none_and_bad(self, monkeypatch):
-        from kalitui import profiles as P
+        from DeepKali import profiles as P
 
         class Stub:
             danger_policy = "ask"

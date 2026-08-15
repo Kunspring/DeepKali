@@ -90,7 +90,7 @@ class MasscanProfile(ToolProfile):
   别乱拉高，会触发告警）；`-p 1-10000` 常用范围；`--wait 5` 等收尾包。
 - 结果解析：masscan 只输出 "Discovered open port"，不输出关闭端口——
   没出现 = 关闭/被丢包；被防火墙丢包时会漏报，可降低 rate 重扫。
-- 与 KaliTUI 联动：masscan 得到存活列表 → nmap -sV 服务识别 →
+- 与 DeepKali 联动：masscan 得到存活列表 → nmap -sV 服务识别 →
   playbook 按端口给建议链（http/445/22/9200…）→ 专项工具深入。
 - 注意：masscan 需要 root 权限（raw socket）；TUI 运行在 root 环境没问题。"""
     extra_schemas = SCHEMAS

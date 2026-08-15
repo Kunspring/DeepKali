@@ -14,8 +14,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.evidence import AgentMemory, extract_findings  # noqa: E402
-from kalitui.scope import ScopeGuard, extract_targets  # noqa: E402
+from DeepKali.evidence import AgentMemory, extract_findings  # noqa: E402
+from DeepKali.scope import ScopeGuard, extract_targets  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +112,7 @@ class TestScopeGuard:
 # ---------------------------------------------------------------------------
 import asyncio  # noqa: E402
 
-from kalitui.tools import Executor  # noqa: E402
+from DeepKali.tools import Executor  # noqa: E402
 
 
 class RecordingApproval:
@@ -124,7 +124,7 @@ class RecordingApproval:
 
     def __call__(self, command: str, level: str, reason: str):
         self.requests.append((command, level, reason))
-        req = __import__("kalitui.tools", fromlist=["ApprovalRequest"]).ApprovalRequest(
+        req = __import__("DeepKali.tools", fromlist=["ApprovalRequest"]).ApprovalRequest(
             command, level, reason
         )
         req.resolve(allow=self.allow)
@@ -201,7 +201,7 @@ class TestFindings:
 # ---------------------------------------------------------------------------
 class TestScopePersistence:
     def test_save_load_roundtrip(self, tmp_path, monkeypatch):
-        import kalitui.scope as scope_mod
+        import DeepKali.scope as scope_mod
 
         fake = tmp_path / "scope.json"
         monkeypatch.setattr(scope_mod, "SCOPE_FILE", fake)
@@ -218,7 +218,7 @@ class TestScopePersistence:
         assert guard2.unauthorized("nmap other.example.com") == ["other.example.com"]
 
     def test_load_corrupt_file_ignored(self, tmp_path, monkeypatch):
-        import kalitui.scope as scope_mod
+        import DeepKali.scope as scope_mod
 
         fake = tmp_path / "scope.json"
         fake.write_text("{not valid json", encoding="utf-8")
@@ -228,7 +228,7 @@ class TestScopePersistence:
         assert guard.authorized == []
 
     def test_load_missing_file(self, tmp_path, monkeypatch):
-        import kalitui.scope as scope_mod
+        import DeepKali.scope as scope_mod
 
         monkeypatch.setattr(scope_mod, "SCOPE_FILE", tmp_path / "nope.json")
         guard = scope_mod.ScopeGuard()
@@ -236,7 +236,7 @@ class TestScopePersistence:
         assert guard.authorized == []
 
     def test_save_unwritable_silent(self, tmp_path, monkeypatch):
-        import kalitui.scope as scope_mod
+        import DeepKali.scope as scope_mod
 
         fake = tmp_path / "sub" / "scope.json"  # 父目录不存在也能建
         monkeypatch.setattr(scope_mod, "SCOPE_FILE", fake)
@@ -250,7 +250,7 @@ class TestScopePersistence:
 # ---------------------------------------------------------------------------
 class TestBountyReport:
     def _agent_with_findings(self):
-        from kalitui.llm import Agent
+        from DeepKali.llm import Agent
 
         agent = Agent(
             api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -289,7 +289,7 @@ class TestBountyReport:
         assert (tmp_path / "r.findings.json").exists()
 
     def test_report_empty_findings(self, tmp_path):
-        from kalitui.llm import Agent
+        from DeepKali.llm import Agent
 
         agent = Agent(
             api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -307,7 +307,7 @@ class TestBountyReport:
 # ---------------------------------------------------------------------------
 class TestWafBypassLore:
     def _lore(self, history: list[dict]) -> str:
-        from kalitui.profiles import lore_for
+        from DeepKali.profiles import lore_for
 
         return lore_for(history)
 
@@ -332,7 +332,7 @@ class TestWafBypassLore:
         assert "WAF 绕过深度要点" not in lore
 
     def test_registered_without_tools(self):
-        from kalitui.profiles import REGISTRY, all_schemas
+        from DeepKali.profiles import REGISTRY, all_schemas
 
         names = {p.name for p in REGISTRY}
         assert "waf_bypass" in names
@@ -345,7 +345,7 @@ class TestWafBypassLore:
 # ---------------------------------------------------------------------------
 class TestVulnProofLore:
     def _lore(self, history: list[dict]) -> str:
-        from kalitui.profiles import lore_for
+        from DeepKali.profiles import lore_for
 
         return lore_for(history)
 
@@ -368,7 +368,7 @@ class TestVulnProofLore:
         assert "漏洞影响证明要点" not in lore
 
     def test_registered_without_tools(self):
-        from kalitui.profiles import REGISTRY, all_schemas
+        from DeepKali.profiles import REGISTRY, all_schemas
 
         names = {p.name for p in REGISTRY}
         assert "vuln_proof" in names
@@ -411,7 +411,7 @@ class TestAttackSurface:
         """端到端：attack_surface 直接查记忆，不经过 executor。"""
         import asyncio
 
-        from kalitui.llm import Agent
+        from DeepKali.llm import Agent
 
         async def run():
             agent = Agent(
@@ -435,7 +435,7 @@ class TestAttackSurface:
 # ---------------------------------------------------------------------------
 class TestSessionResume:
     def _make_agent(self):
-        from kalitui.llm import Agent
+        from DeepKali.llm import Agent
 
         return Agent(
             api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -490,7 +490,7 @@ class TestSessionResume:
         assert agent.save_state() is False
 
     def test_findings_severity_sort(self):
-        from kalitui.evidence import sort_findings
+        from DeepKali.evidence import sort_findings
 
         findings = [
             {"type": "http_error", "value": "500", "evidence": "e1"},
@@ -580,7 +580,7 @@ class TestTargetStats:
 # ---------------------------------------------------------------------------
 class TestPrivescLore:
     def _lore(self, history: list[dict]) -> str:
-        from kalitui.profiles import lore_for
+        from DeepKali.profiles import lore_for
 
         return lore_for(history)
 
@@ -599,7 +599,7 @@ class TestPrivescLore:
         assert "提权（Privesc）检查清单" not in lore
 
     def test_registered_without_tools(self):
-        from kalitui.profiles import REGISTRY, all_schemas
+        from DeepKali.profiles import REGISTRY, all_schemas
 
         names = {p.name for p in REGISTRY}
         assert "privesc" in names
@@ -660,7 +660,7 @@ class TestCidrScope:
 # ---------------------------------------------------------------------------
 class TestVulnDetectLore:
     def _lore(self, history: list[dict]) -> str:
-        from kalitui.profiles import lore_for
+        from DeepKali.profiles import lore_for
 
         return lore_for(history)
 
@@ -684,7 +684,7 @@ class TestVulnDetectLore:
         assert "漏洞检测手法" not in lore
 
     def test_registered_without_tools(self):
-        from kalitui.profiles import REGISTRY, all_schemas
+        from DeepKali.profiles import REGISTRY, all_schemas
 
         assert "vuln_detect" in {p.name for p in REGISTRY}
         assert all(s["function"]["name"] != "vuln_detect" for s in all_schemas())
@@ -694,14 +694,14 @@ class TestVulnDetectLore:
 
 class TestPrivateHelpers:
     def test_is_valid_cidr_bad(self):
-        from kalitui.scope import _is_valid_cidr
+        from DeepKali.scope import _is_valid_cidr
 
         assert not _is_valid_cidr("not-a-cidr")
         assert not _is_valid_cidr("10.0.0.0/99")
         assert _is_valid_cidr("203.0.113.0/24")
 
     def test_is_private_cidr_and_ipv6(self):
-        from kalitui.scope import _is_private
+        from DeepKali.scope import _is_private
 
         # CIDR 分支（带斜杠）
         assert _is_private("10.0.0.0/8")
@@ -717,16 +717,16 @@ class TestPrivateHelpers:
         assert not _is_private("999.1.1.1")
 
     def test_is_ip_bad(self):
-        from kalitui.scope import _is_ip
+        from DeepKali.scope import _is_ip
 
         assert not _is_ip("not-an-ip")
         assert _is_ip("10.0.0.5")
 
     def test_summary_empty_authorized(self, tmp_path, monkeypatch):
         """已授权目标为空时显示占位（覆盖 L306）。"""
-        from kalitui.scope import ScopeGuard
+        from DeepKali.scope import ScopeGuard
 
-        monkeypatch.setenv("KALITUI_SCOPE_FILE", str(tmp_path / "s.json"))
+        monkeypatch.setenv("DEEPKALI_SCOPE_FILE", str(tmp_path / "s.json"))
         g = ScopeGuard(policy="ask")
         s = g.summary()
         assert "已授权目标: （无）" in s
@@ -736,14 +736,14 @@ class TestPrivateHelpers:
 
 class TestScopeBranches:
     def test_private_cidr_and_invalid_ip(self):
-        from kalitui.scope import _is_private
+        from DeepKali.scope import _is_private
 
         assert _is_private("10.0.0.0/8") is True
         assert _is_private("192.168.1.0/24") is True
         assert _is_private("999.1.1.1") is False  # ip_address 抛 ValueError
 
     def test_looks_like_file_path(self):
-        from kalitui.scope import _looks_like_file_path
+        from DeepKali.scope import _looks_like_file_path
 
         assert _looks_like_file_path("config.php") is True
         assert _looks_like_file_path("/var/www/index.html") is True
@@ -751,14 +751,14 @@ class TestScopeBranches:
         assert _looks_like_file_path("example.com") is False
 
     def test_is_non_target_local(self):
-        from kalitui.scope import _is_non_target
+        from DeepKali.scope import _is_non_target
 
         assert _is_non_target("router.local") is True
         assert _is_non_target("printer.home") is True
         assert _is_non_target("random-site.com") is False
 
     def test_extract_net_tool_domains(self):
-        from kalitui.scope import extract_targets
+        from DeepKali.scope import extract_targets
 
         # 网络工具语境里的域名也算目标
         ts = extract_targets("nmap -p 80 -sV api.example.com")
@@ -768,7 +768,7 @@ class TestScopeBranches:
         assert not any("::1" in t for t in ts2)
 
     def test_is_authorized_cidr_containment(self):
-        from kalitui.scope import ScopeGuard
+        from DeepKali.scope import ScopeGuard
 
         g = ScopeGuard()
         g.authorize("8.8.8.0/24")
@@ -776,7 +776,7 @@ class TestScopeBranches:
         assert g.unauthorized("nmap 8.8.9.8") == ["8.8.9.8"]
 
     def test_summary_with_declined(self):
-        from kalitui.scope import ScopeGuard
+        from DeepKali.scope import ScopeGuard
 
         g = ScopeGuard()
         g.authorize("a.com")
@@ -790,7 +790,7 @@ class TestScopeBranches:
 
 class TestScopeBranches2:
     def test_private_invalid_cidr_and_ipv6(self):
-        from kalitui.scope import _is_private
+        from DeepKali.scope import _is_private
 
         assert _is_private("300.0.0.0/8") is False  # 非法 CIDR → ValueError
         assert _is_private("fd00::/8") is False     # IPv6 CIDR 非私有豁免
@@ -798,13 +798,13 @@ class TestScopeBranches2:
         assert _is_private("2001:db8::1") is False  # IPv6 公网
 
     def test_path_separator_without_ext(self):
-        from kalitui.scope import _looks_like_file_path
+        from DeepKali.scope import _looks_like_file_path
 
         assert _looks_like_file_path("uploads/backup") is True  # 含 / 无扩展名
         assert _looks_like_file_path("a/b/c") is True
 
     def test_lan_suffix_and_ipv6_token(self):
-        from kalitui.scope import _is_non_target, extract_targets
+        from DeepKali.scope import _is_non_target, extract_targets
 
         assert _is_non_target("nas.lan") is True
         assert _is_non_target("host.home") is True
@@ -812,7 +812,7 @@ class TestScopeBranches2:
         assert not any("::1" in t for t in extract_targets("curl [::1]:8080"))
 
     def test_net_tool_first_word(self):
-        from kalitui.scope import extract_targets
+        from DeepKali.scope import extract_targets
 
         # 网络工具作为首词（无分号管道）也提取域名
         ts = extract_targets("gobuster dir -u http://blog.example.com")
@@ -823,13 +823,13 @@ class TestScopeBranches2:
 
 class TestScopeBranches3:
     def test_ipv6_token_extracted(self):
-        from kalitui.scope import extract_targets
+        from DeepKali.scope import extract_targets
 
         ts = extract_targets("curl [2001:db8::1]")
         assert any("2001:db8::1" in t for t in ts)
 
     def test_authorized_bad_cidr_skipped(self):
-        from kalitui.scope import ScopeGuard
+        from DeepKali.scope import ScopeGuard
 
         g = ScopeGuard()
         g.authorize_all(["8.8.8.0/24", "not-a-cidr//"])  # 非法 CIDR 容错
@@ -837,7 +837,7 @@ class TestScopeBranches3:
         assert g.unauthorized("nmap 9.9.9.9") == ["9.9.9.9"]
 
     def test_persist_oserror_tolerated(self, monkeypatch, tmp_path):
-        import kalitui.scope as S
+        import DeepKali.scope as S
 
         monkeypatch.setattr(S, "SCOPE_FILE", tmp_path / "no" / "dir" / "scope.json")
         g = S.ScopeGuard()
@@ -845,7 +845,7 @@ class TestScopeBranches3:
         g.save_persisted()  # 目录不存在 → OSError 吞掉不崩
 
     def test_load_persisted_missing_file(self, monkeypatch, tmp_path):
-        import kalitui.scope as S
+        import DeepKali.scope as S
 
         monkeypatch.setattr(S, "SCOPE_FILE", tmp_path / "absent.json")
         g = S.ScopeGuard()
@@ -856,7 +856,7 @@ class TestScopeBranches3:
 class TestScopePersistOSError:
     def test_save_persisted_unwritable(self, monkeypatch):
         """持久化路径不可写 → OSError 静默（授权仍在会话内生效）。"""
-        import kalitui.scope as S
+        import DeepKali.scope as S
 
         monkeypatch.setattr(S, "SCOPE_FILE", __import__("pathlib").Path("/proc/x/scope.json"))
         g = S.ScopeGuard()

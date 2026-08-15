@@ -10,14 +10,14 @@ import pytest
 @pytest.fixture
 def iso_config(tmp_path, monkeypatch: pytest.MonkeyPatch):
     """把 CONFIG_FILE/SESSION_DIR 隔离到 tmp_path。"""
-    import kalitui.config as C
+    import DeepKali.config as C
 
     monkeypatch.setattr(C, "CONFIG_DIR", tmp_path / "config")
     monkeypatch.setattr(C, "CONFIG_FILE", tmp_path / "config" / "config.json")
     monkeypatch.setattr(C, "SESSION_DIR", tmp_path / "sessions")
     monkeypatch.setattr(C, "DATA_DIR", tmp_path / "data")
-    for env in ("KALITUI_API_KEY", "KALITUI_BASE_URL", "KALITUI_MODEL",
-                "KALITUI_DEMO", "KALITUI_WORKDIR", "KALITUI_SCOPE_POLICY"):
+    for env in ("DEEPKALI_API_KEY", "DEEPKALI_BASE_URL", "DEEPKALI_MODEL",
+                "DEEPKALI_DEMO", "DEEPKALI_WORKDIR", "DEEPKALI_SCOPE_POLICY"):
         monkeypatch.delenv(env, raising=False)
     return C
 
@@ -51,10 +51,10 @@ def test_load_bad_json_ignored(iso_config):
 def test_env_overrides_file(iso_config, monkeypatch: pytest.MonkeyPatch):
     iso_config.CONFIG_FILE.parent.mkdir(parents=True)
     iso_config.CONFIG_FILE.write_text(json.dumps({"model": "file-model"}), encoding="utf-8")
-    monkeypatch.setenv("KALITUI_MODEL", "env-model")
-    monkeypatch.setenv("KALITUI_API_KEY", "sk-env")
-    monkeypatch.setenv("KALITUI_DEMO", "true")
-    monkeypatch.setenv("KALITUI_SCOPE_POLICY", "off")
+    monkeypatch.setenv("DEEPKALI_MODEL", "env-model")
+    monkeypatch.setenv("DEEPKALI_API_KEY", "sk-env")
+    monkeypatch.setenv("DEEPKALI_DEMO", "true")
+    monkeypatch.setenv("DEEPKALI_SCOPE_POLICY", "off")
     cfg = iso_config.Config.load()
     assert cfg.model == "env-model"  # env 优先
     assert cfg.api_key == "sk-env"
@@ -64,7 +64,7 @@ def test_env_overrides_file(iso_config, monkeypatch: pytest.MonkeyPatch):
 
 def test_demo_env_parsing(iso_config, monkeypatch: pytest.MonkeyPatch):
     for v, expect in (("1", True), ("false", False), ("no", False), ("yes", True)):
-        monkeypatch.setenv("KALITUI_DEMO", v)
+        monkeypatch.setenv("DEEPKALI_DEMO", v)
         cfg = iso_config.Config.load()
         assert cfg.demo is expect, v
 

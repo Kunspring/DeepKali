@@ -61,7 +61,7 @@ SCHEMAS: list[dict[str, Any]] = [
                     },
                     "output": {
                         "type": "string",
-                        "description": "输出路径（默认 /tmp/kalitui-report-<时间戳>.md）",
+                        "description": "输出路径（默认 /tmp/DeepKali-report-<时间戳>.md）",
                     },
                 },
                 "required": ["title", "target"],
@@ -134,7 +134,7 @@ def _build_report(args: dict[str, Any]) -> str:
         ]
     if not cleaned:
         lines += ["未记录漏洞发现（可补充 findings 列表）。", ""]
-    lines += ["---", "由 KaliTUI report_gen 生成。"]
+    lines += ["---", "由 DeepKali report_gen 生成。"]
     return "\n".join(lines)
 
 
@@ -153,7 +153,7 @@ class ReportGenProfile(ToolProfile):
     extra_schemas = SCHEMAS
 
     async def exec_report_gen(self, ex: Any, args: dict[str, Any]) -> str:
-        outfile = _check_output(str(args.get("output") or "/tmp/kalitui-report.md"))
+        outfile = _check_output(str(args.get("output") or "/tmp/DeepKali-report.md"))
         report = _build_report(args)
         with open(outfile, "w", encoding="utf-8") as f:
             f.write(report)

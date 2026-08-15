@@ -8,13 +8,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.curl import _build_cmd as curl_cmd  # noqa: E402
-from kalitui.profiles.ftp import _build_cmd as ftp_cmd  # noqa: E402
-from kalitui.profiles.redis import _build_cmd as redis_cmd  # noqa: E402
-from kalitui.profiles.sslscan import _build_cmd as ssl_cmd  # noqa: E402
-from kalitui.profiles.wafw00f import _build_cmd as waf_cmd  # noqa: E402
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.curl import _build_cmd as curl_cmd  # noqa: E402
+from DeepKali.profiles.ftp import _build_cmd as ftp_cmd  # noqa: E402
+from DeepKali.profiles.redis import _build_cmd as redis_cmd  # noqa: E402
+from DeepKali.profiles.sslscan import _build_cmd as ssl_cmd  # noqa: E402
+from DeepKali.profiles.wafw00f import _build_cmd as waf_cmd  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 

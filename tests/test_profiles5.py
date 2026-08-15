@@ -8,13 +8,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.chisel import _build_cmd as chisel_cmd  # noqa: E402
-from kalitui.profiles.ldapsearch import _build_cmd as ldap_cmd  # noqa: E402
-from kalitui.profiles.netcat import _escape_data, _nc_bin  # noqa: E402
-from kalitui.profiles.secretsdump import _build_cmd as secretsdump_cmd  # noqa: E402
-from kalitui.profiles.smbclient import _build_cmd as smbclient_cmd  # noqa: E402
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.chisel import _build_cmd as chisel_cmd  # noqa: E402
+from DeepKali.profiles.ldapsearch import _build_cmd as ldap_cmd  # noqa: E402
+from DeepKali.profiles.netcat import _escape_data, _nc_bin  # noqa: E402
+from DeepKali.profiles.secretsdump import _build_cmd as secretsdump_cmd  # noqa: E402
+from DeepKali.profiles.smbclient import _build_cmd as smbclient_cmd  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 
@@ -122,7 +122,7 @@ class StubEx5:
 
 @pytest.mark.asyncio
 async def test_fifth_batch_route_to_run_command(monkeypatch: pytest.MonkeyPatch) -> None:
-    import kalitui.profiles.chisel as chisel_mod
+    import DeepKali.profiles.chisel as chisel_mod
 
     monkeypatch.setattr(chisel_mod, "check_installed", lambda _b: True)  # 本机未装 chisel
     stub = StubEx5()

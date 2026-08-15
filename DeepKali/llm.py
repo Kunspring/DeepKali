@@ -533,14 +533,14 @@ class Agent:
         from datetime import datetime
 
         if path is None:
-            out_dir = os.path.join(self.workdir or ".", "kalitui-reports")
+            out_dir = os.path.join(self.workdir or ".", "DeepKali-reports")
             os.makedirs(out_dir, exist_ok=True)
             ts = datetime.now().strftime("%Y%m%d-%H%M%S")
             path = os.path.join(out_dir, f"report-{ts}.md")
 
         goal = self._last_goal or "（无）"
         lines = [
-            "# KaliTUI 任务复盘报告",
+            "# DeepKali 任务复盘报告",
             "",
             f"- 生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
             f"- 模型: {self.model}",
@@ -851,7 +851,7 @@ class Agent:
         from .evidence import severity_of, sort_findings
 
         if path is None:
-            out_dir = os.path.join(self.workdir or ".", "kalitui-reports")
+            out_dir = os.path.join(self.workdir or ".", "DeepKali-reports")
             os.makedirs(out_dir, exist_ok=True)
             path = os.path.join(out_dir, "findings.csv")
         with open(path, "w", newline="", encoding="utf-8-sig") as f:

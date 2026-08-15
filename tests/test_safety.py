@@ -5,7 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 CASES: list[tuple[str, str]] = [
     # safe

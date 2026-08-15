@@ -18,14 +18,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.evidence import (  # noqa: E402
+from DeepKali.evidence import (  # noqa: E402
     AgentMemory,
     extract_flags,
     extract_pinned_facts,
     make_high_signal_preview,
 )
-from kalitui.llm import Agent, CompletionGate, ReflexionLadder  # noqa: E402
-from kalitui.tools import Executor  # noqa: E402
+from DeepKali.llm import Agent, CompletionGate, ReflexionLadder  # noqa: E402
+from DeepKali.tools import Executor  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -448,7 +448,7 @@ async def test_ask_user_gate_rejects_premature_question():
 @pytest.mark.asyncio
 async def test_ask_user_real_blocker_passes_through():
     """真阻塞（授权/凭证类）问题不被闸门拦截，剥离标记返回。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     server = MockAskServer()
     await server.start()
@@ -473,7 +473,7 @@ async def test_ask_user_real_blocker_passes_through():
 # ---------------------------------------------------------------------------
 class TestLateralLore:
     def _lore(self, history: list[dict]) -> str:
-        from kalitui.profiles import lore_for
+        from DeepKali.profiles import lore_for
 
         return lore_for(history)
 
@@ -492,7 +492,7 @@ class TestLateralLore:
         assert "内网横向移动路线" not in lore
 
     def test_registered_without_tools(self):
-        from kalitui.profiles import REGISTRY, all_schemas
+        from DeepKali.profiles import REGISTRY, all_schemas
 
         assert "lateral" in {p.name for p in REGISTRY}
         assert all(s["function"]["name"] != "lateral" for s in all_schemas())
@@ -503,7 +503,7 @@ class TestLateralLore:
 # ---------------------------------------------------------------------------
 class TestContextCompress:
     def _make_agent(self):
-        from kalitui.llm import Agent as A
+        from DeepKali.llm import Agent as A
 
         return A(
             api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -565,7 +565,7 @@ class TestContextCompress:
 
 class TestTokenCompress:
     def _make_agent(self):
-        from kalitui.llm import Agent as A
+        from DeepKali.llm import Agent as A
 
         return A(
             api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -630,7 +630,7 @@ class TestTokenCompress:
 # ---------------------------------------------------------------------------
 class TestFindingsExport:
     def _make_agent(self):
-        from kalitui.llm import Agent as A
+        from DeepKali.llm import Agent as A
 
         return A(
             api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -665,7 +665,7 @@ class TestFindingsExport:
 @pytest.mark.asyncio
 async def test_ask_user_empty_question_strips_marker() -> None:
     """ASK_USER 后无内容：返回剥离标记的文本，不留前缀。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -684,7 +684,7 @@ async def test_ask_user_empty_question_strips_marker() -> None:
 
 class TestReportGaps:
     def _make_agent(self):
-        from kalitui.llm import Agent as A
+        from DeepKali.llm import Agent as A
 
         return A(
             api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -713,7 +713,7 @@ class TestReportGaps:
         assert "admin" in section
 
     def test_gaps_method(self):
-        from kalitui.evidence import AgentMemory
+        from DeepKali.evidence import AgentMemory
 
         mem = AgentMemory()
         assert set(mem.attack_surface_gaps()) >= {"sql", "form", "flag"}
@@ -730,7 +730,7 @@ class FakeApproveExecutor(FakeExecutor):
 
     async def execute(self, name, arguments):
         if name == "run_command":
-            from kalitui.tools import NeedsApproval
+            from DeepKali.tools import NeedsApproval
 
             raise NeedsApproval("hydra -l admin -P x 127.0.0.1", "confirm", "危险命令")
         return await super().execute(name, arguments)
@@ -739,7 +739,7 @@ class FakeApproveExecutor(FakeExecutor):
 @pytest.mark.asyncio
 async def test_execute_tool_needs_approval_path():
     """_execute_tool 捕获 NeedsApproval → 返回说明文本。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -863,7 +863,7 @@ async def test_retry_gate_tool_loop_and_real_flag():
 
 
 def test_impact_level_vuln_marker():
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -875,7 +875,7 @@ def test_impact_level_vuln_marker():
 
 def test_write_report_truncates_large_evidence(tmp_path):
     """大证据在报告里显示截断提示。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -890,7 +890,7 @@ def test_write_report_truncates_large_evidence(tmp_path):
 
 def test_token_estimate_non_text_content():
     """非文本 content（list 等）按保守 200 估算。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -902,7 +902,7 @@ def test_token_estimate_non_text_content():
 
 def test_gate_goal_wants_flag_but_no_flag():
     """目标要求 flag，结论没给 flag → 拒绝。"""
-    from kalitui.llm import CompletionGate
+    from DeepKali.llm import CompletionGate
 
     gate = CompletionGate(AgentMemory(), goal="帮我拿 flag")
     ok, reason = gate.check("FINAL: 没找到")
@@ -912,7 +912,7 @@ def test_gate_goal_wants_flag_but_no_flag():
 
 def test_save_state_oserror_returns_false():
     """resume_path 不可写 → save_state 返回 False 不抛。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -923,8 +923,8 @@ def test_save_state_oserror_returns_false():
 
 
 def test_export_default_path(tmp_path):
-    """export_findings_csv 默认输出到 workdir/kalitui-reports/findings.csv。"""
-    from kalitui.llm import Agent as A
+    """export_findings_csv 默认输出到 workdir/DeepKali-reports/findings.csv。"""
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -933,7 +933,7 @@ def test_export_default_path(tmp_path):
     )
     agent.memory.record("run_command", {"command": "x"}, "flag{export_one}")
     path = agent.export_findings_csv()
-    assert path.endswith("kalitui-reports/findings.csv")
+    assert path.endswith("DeepKali-reports/findings.csv")
     assert "flag{export_one}" in open(path, encoding="utf-8-sig").read()
 
 
@@ -968,7 +968,7 @@ class MockEmptyChoicesServer:
 @pytest.mark.asyncio
 async def test_api_empty_choices_raises():
     """API 返回空 choices → LLMError（不再继续）。"""
-    from kalitui.llm import Agent as A, LLMError
+    from DeepKali.llm import Agent as A, LLMError
 
     server = MockEmptyChoicesServer()
     await server.start()
@@ -989,7 +989,7 @@ async def test_api_empty_choices_raises():
 
 def test_domain_facts_extraction():
     """crt.sh 摘要的裸域名行提取为 Subdomain 事实。"""
-    from kalitui.evidence import extract_pinned_facts
+    from DeepKali.evidence import extract_pinned_facts
 
     text = (
         "关键结果：\n"
@@ -1010,7 +1010,7 @@ def test_domain_facts_extraction():
 
 def test_domain_facts_ignores_urls_ips_and_json():
     """URL/IP/JSON 行不误提取为 Subdomain。"""
-    from kalitui.evidence import extract_pinned_facts
+    from DeepKali.evidence import extract_pinned_facts
 
     text = (
         "https://vpn.example.com [200] [VPN] [nginx]\n"
@@ -1025,7 +1025,7 @@ def test_domain_facts_ignores_urls_ips_and_json():
 
 def test_crtsh_output_pins_domains():
     """crt_sh 工具摘要经 memory.record 后域名进 pinned facts。"""
-    from kalitui.evidence import AgentMemory
+    from DeepKali.evidence import AgentMemory
 
     mem = AgentMemory()
     mem.record(
@@ -1040,7 +1040,7 @@ def test_crtsh_output_pins_domains():
 
 def test_impact_level_all_branches():
     """_impact_level 五种发现组合分支。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -1059,7 +1059,7 @@ def test_impact_level_all_branches():
 
 def test_reproduction_steps_bad_arguments():
     """arguments 不可 JSON 序列化 → 回退 str()。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     agent = A(
         api_key="x", base_url="http://127.0.0.1:9/v1", model="m",
@@ -1122,7 +1122,7 @@ class _StubbornLLMServer:
 @pytest.mark.asyncio
 async def test_gate_stops_reinjection_after_two_retries():
     """连续无证据 FINAL 被拒 3 次 → 第 3 次返回停止注释（防递归）。"""
-    from kalitui.llm import Agent as A
+    from DeepKali.llm import Agent as A
 
     server = _StubbornLLMServer()
     await server.start()
@@ -1149,7 +1149,7 @@ async def test_gate_stops_reinjection_after_two_retries():
 # ---------------------------------------------------------------------------
 def test_important_lines_limit_break():
     """高信号行超过 limit → 截断到 limit。"""
-    from kalitui.evidence import _important_lines
+    from DeepKali.evidence import _important_lines
 
     raw = "\n".join(f"flag mention line {i}" for i in range(30))
     lines = _important_lines(raw, limit=10)
@@ -1158,7 +1158,7 @@ def test_important_lines_limit_break():
 
 def test_sql_and_js_endpoint_limits():
     """SQL/JS endpoint 提取上限 break。"""
-    from kalitui.evidence import _extract_js_endpoint_facts, _extract_sql_facts
+    from DeepKali.evidence import _extract_js_endpoint_facts, _extract_sql_facts
 
     sql = "\n".join(
         f"SELECT * FROM users WHERE id={i} LIMIT 1" for i in range(10)
@@ -1171,7 +1171,7 @@ def test_sql_and_js_endpoint_limits():
 
 def test_pinned_facts_and_evidence_caps():
     """pinned facts 与 evidence 存储上限截断。"""
-    from kalitui.evidence import MAX_PINNED_FACTS, AgentMemory
+    from DeepKali.evidence import MAX_PINNED_FACTS, AgentMemory
 
     mem = AgentMemory()
     # 大量不同 flag 输出 → evidence 超限后保留尾部
@@ -1188,7 +1188,7 @@ def test_pinned_facts_and_evidence_caps():
 
 def test_list_summary_empty():
     """无证据时 list_summary 占位提示。"""
-    from kalitui.evidence import AgentMemory
+    from DeepKali.evidence import AgentMemory
 
     mem = AgentMemory()
     assert mem.list_summary() == "（还没有任何证据）"
@@ -1196,7 +1196,7 @@ def test_list_summary_empty():
 
 def test_attack_surface_summary_no_evidence():
     """攻击面快照无证据时走"扩大侦察"建议分支。"""
-    from kalitui.evidence import AgentMemory
+    from DeepKali.evidence import AgentMemory
 
     mem = AgentMemory()
     s = mem.attack_surface_summary()
@@ -1205,7 +1205,7 @@ def test_attack_surface_summary_no_evidence():
 
 def test_repeat_hint_json_fallback():
     """arguments 不可 JSON 序列化 → 回退 str() 不抛。"""
-    from kalitui.evidence import AgentMemory
+    from DeepKali.evidence import AgentMemory
 
     mem = AgentMemory()
     mem.record("run_command", {"cmd": object()}, "out1")
@@ -1227,7 +1227,7 @@ class _BranchExecutor:
         if name == "big_out":
             return "x" * 8000
         if name == "boom_tool":
-            from kalitui.tools import ToolError
+            from DeepKali.tools import ToolError
 
             raise ToolError("内部错误: 测试失败")
         return "普通输出"
@@ -1418,7 +1418,7 @@ async def test_report_oserror_emits_error(monkeypatch):
 
 
 def test_severity_low_branch():
-    from kalitui.evidence import severity_of
+    from DeepKali.evidence import severity_of
 
     assert severity_of({"type": "http_error"}) == 1
 
@@ -1503,7 +1503,7 @@ def _unit_agent() -> "Agent":
 
 
 def test_looks_exhaustive_branches():
-    from kalitui.llm import _looks_exhaustive
+    from DeepKali.llm import _looks_exhaustive
 
     assert _looks_exhaustive("已验证全部端点") is True
     assert _looks_exhaustive("已验证端点但无回显") is False  # premature 覆盖
@@ -1534,7 +1534,7 @@ def test_timeline_ts_error_and_brief_truncate(tmp_path):
 
 def test_write_report_findings_json_oserror(tmp_path, monkeypatch):
     """findings.json 写入失败不影响主报告。"""
-    import kalitui.llm as L
+    import DeepKali.llm as L
 
     def boom(*a, **k):
         raise OSError("磁盘满")
@@ -1571,7 +1571,7 @@ def test_reproduction_steps_and_impact_level():
 # llm 单元级补充：reset / after_marker / 耗时纠偏 / 序列化兜底
 # ---------------------------------------------------------------------------
 def test_after_marker_no_match():
-    from kalitui.llm import _after_marker, _has_marker
+    from DeepKali.llm import _after_marker, _has_marker
 
     assert _after_marker("没有标记的文本", ("NO_PATH:",)) == ""
     assert _has_marker("FINAL: done", ("FINAL:",)) is True
@@ -1606,7 +1606,7 @@ class _SlowFailExecutor:
         self.extensions: dict = {}
 
     async def execute(self, name: str, arguments: dict) -> str:
-        from kalitui.tools import ToolError
+        from DeepKali.tools import ToolError
 
         raise ToolError("慢失败")
 
@@ -1616,7 +1616,7 @@ async def test_slow_failure_duration_hint(monkeypatch):
     """失败且耗时 ≥15s → 纠偏提示。"""
     import itertools
 
-    import kalitui.llm as L
+    import DeepKali.llm as L
 
     counter = itertools.count(0, 20.0)
     monkeypatch.setattr(L.time, "monotonic", lambda: next(counter))
@@ -1672,7 +1672,7 @@ class _HealthBigExecutor:
     async def execute(self, name: str, arguments: dict) -> str:
         self.calls += 1
         if self.calls <= 3:
-            from kalitui.tools import ToolError
+            from DeepKali.tools import ToolError
 
             raise ToolError("超时")
         return "高信号行: admin login\n" + "x" * 8000
@@ -1755,7 +1755,7 @@ async def test_retry_bad_json_and_loop_exhausted():
 # unauthorized 独立发现类（SRC 未授权访问/信息泄露）
 # ---------------------------------------------------------------------------
 def test_extract_unauthorized_finding():
-    from kalitui.evidence import extract_findings
+    from DeepKali.evidence import extract_findings
 
     fs = extract_findings("检测到 actuator 端点未授权访问，/env 可读", "e9")
     types = [f["type"] for f in fs]
@@ -1765,7 +1765,7 @@ def test_extract_unauthorized_finding():
 
 
 def test_unauthorized_severity_and_sort():
-    from kalitui.evidence import severity_of, sort_findings
+    from DeepKali.evidence import severity_of, sort_findings
 
     assert severity_of({"type": "unauthorized"}) == 4
     fs = sort_findings([
@@ -1786,7 +1786,7 @@ def test_impact_level_unauthorized():
 # evidence 剩余分支：满员拒绝 / 空行预览 / 攻击面分支 / 快照恢复容错
 # ---------------------------------------------------------------------------
 def test_preview_blank_lines_skipped():
-    from kalitui.evidence import make_high_signal_preview
+    from DeepKali.evidence import make_high_signal_preview
 
     # 全空行大输出：走截断路径，无高信号行但保留 header+省略标记
     pv = make_high_signal_preview("\n" * 9000)

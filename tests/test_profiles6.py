@@ -8,13 +8,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.getnpusers import _build_cmd as npusers_cmd  # noqa: E402
-from kalitui.profiles.getuserspns import _build_cmd as userspns_cmd  # noqa: E402
-from kalitui.profiles.hping3 import _build_cmd as hping_cmd  # noqa: E402
-from kalitui.profiles.socat import _build_cmd as socat_cmd  # noqa: E402
-from kalitui.profiles.tshark import _build_cmd as tshark_cmd  # noqa: E402
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.getnpusers import _build_cmd as npusers_cmd  # noqa: E402
+from DeepKali.profiles.getuserspns import _build_cmd as userspns_cmd  # noqa: E402
+from DeepKali.profiles.hping3 import _build_cmd as hping_cmd  # noqa: E402
+from DeepKali.profiles.socat import _build_cmd as socat_cmd  # noqa: E402
+from DeepKali.profiles.tshark import _build_cmd as tshark_cmd  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 

@@ -1,4 +1,4 @@
-"""配置加载：环境变量优先，其次 ~/.config/kalitui/config.json。"""
+"""配置加载：环境变量优先，其次 ~/.config/DeepKali/config.json。"""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ import os
 from dataclasses import dataclass, field
 from pathlib import Path
 
-CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "kalitui"
+CONFIG_DIR = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "DeepKali"
 CONFIG_FILE = CONFIG_DIR / "config.json"
-DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "kalitui"
+DATA_DIR = Path(os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")) / "DeepKali"
 SESSION_DIR = DATA_DIR / "sessions"
 
 
@@ -42,12 +42,12 @@ class Config:
                 pass
         # 环境变量（最高优先级）
         env_map = {
-            "KALITUI_API_KEY": "api_key",
-            "KALITUI_BASE_URL": "base_url",
-            "KALITUI_MODEL": "model",
-            "KALITUI_DEMO": "demo",
-            "KALITUI_WORKDIR": "workdir",
-            "KALITUI_SCOPE_POLICY": "scope_policy",
+            "DEEPKALI_API_KEY": "api_key",
+            "DEEPKALI_BASE_URL": "base_url",
+            "DEEPKALI_MODEL": "model",
+            "DEEPKALI_DEMO": "demo",
+            "DEEPKALI_WORKDIR": "workdir",
+            "DEEPKALI_SCOPE_POLICY": "scope_policy",
         }
         for env, attr in env_map.items():
             if os.environ.get(env):

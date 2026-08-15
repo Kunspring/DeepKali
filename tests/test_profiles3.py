@@ -8,13 +8,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.aircrack import _build_cmd as aircrack_cmd  # noqa: E402
-from kalitui.profiles.dnsrecon import _build_cmd as dnsrecon_cmd  # noqa: E402
-from kalitui.profiles.enum4linux import _build_cmd as enum_cmd  # noqa: E402
-from kalitui.profiles.ffuf import _build_cmd as ffuf_cmd  # noqa: E402
-from kalitui.profiles.smbmap import _build_cmd as smbmap_cmd  # noqa: E402
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.aircrack import _build_cmd as aircrack_cmd  # noqa: E402
+from DeepKali.profiles.dnsrecon import _build_cmd as dnsrecon_cmd  # noqa: E402
+from DeepKali.profiles.enum4linux import _build_cmd as enum_cmd  # noqa: E402
+from DeepKali.profiles.ffuf import _build_cmd as ffuf_cmd  # noqa: E402
+from DeepKali.profiles.smbmap import _build_cmd as smbmap_cmd  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 

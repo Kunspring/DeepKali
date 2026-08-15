@@ -1,4 +1,4 @@
-# KaliTUI — AI 驾驭 Kali 的终端渗透 Agent
+# DeepKali — AI 驾驭 Kali 的终端渗透 Agent
 
 [![tests](https://img.shields.io/badge/tests-733%20passed-brightgreen)](https://github.com/Kunspring/DeepKali)
 [![tools](https://img.shields.io/badge/tools-48%20%E4%B8%93%E7%94%A8-8A2BE2)](https://github.com/Kunspring/DeepKali)
@@ -10,12 +10,12 @@
 > 45 个 Kali 常用工具**逐个深度定制**，一个界面完成整个渗透测试工作流。
 
 ```
-┌ KaliTUI — AI 驾驭 Kali ───────────────────────────────┐
+┌ DeepKali — AI 驾驭 Kali ───────────────────────────────┐
 │ 💬 对话                    │ 🛠 工具执行               │
 │ 你 扫描一下 127.0.0.1      │ ▶ run_command {nmap -F …}│
 │ 🤔 agent 思考中…           │ ✔ run_command 完成        │
 │ 🛠 调用 run_command         │ Starting Nmap 7.95 …     │
-│ KaliTUI 目标 22/tcp open…  │ 22/tcp  open  ssh         │
+│ DeepKali 目标 22/tcp open…  │ 22/tcp  open  ssh         │
 │ ⚠ 危险操作确认             │                          │
 │  爆破/口令攻击工具          │                          │
 │  [hydra -l admin …]        │                          │
@@ -36,7 +36,7 @@
 - **Reflexion 反思升级**：连续失败后按 L0-L4 渐进升级（原始 payload → URL 编码 →
   双重编码/注释 → Unicode/拼接 → 多层编码/OOB），提示模型换思路而不是盲目重试
 - **自动复盘报告**：任务完成后基于证据确定性生成 Markdown 报告（不额外请求 LLM）
-- **Kali 工具逐个深度定制**（`kalitui/profiles/`）：每个常用工具一个专属档案——
+- **Kali 工具逐个深度定制**（`DeepKali/profiles/`）：每个常用工具一个专属档案——
   参数化专用工具（输入校验、防注入、自动摘要输出）+ 深度使用 lore 按需注入提示词
 - **工具联动流水线**：`recon_pipeline` 一条命令完成"存活探测 → 版本扫描 → 工具链建议"
 - **三层安全模型**：命令静态分级 + 确认弹窗 + 参数白名单防注入
@@ -76,7 +76,7 @@
 - **crt.sh 证书透明度枚举 + httpx 批量探测**：证书日志提子域 → httpx 批量存活/指纹
   （状态码/标题/技术栈）一键衔接；修复 _summary 空输出丢头部提示的通用缺陷
 - **http_req 会话保持（cookie jar）**：save/use/session 三种模式，登录后
-  跨请求保持会话（/tmp/kalitui-session-cookies.txt），遍历受保护页面刚需
+  跨请求保持会话（/tmp/DeepKali-session-cookies.txt），遍历受保护页面刚需
 - **子域事实提取**：crt.sh/dnsrecon 输出的裸域名列表自动 pin 为 Subdomain 事实
   （大小写归一、URL/IP/JSON 噪音过滤），会话压缩后仍可引用
 - **git_leak .git 源码泄露检测**：探测 .git/config 与 .git/HEAD（高频真实漏洞），
@@ -258,7 +258,7 @@ graph TD
 
 ## 🛡 安全模型（四层）
 
-### 第一层：命令静态分级（`kalitui/safety.py`，30+ 规则）
+### 第一层：命令静态分级（`DeepKali/safety.py`，30+ 规则）
 
 | 级别 | 行为 | 典型规则 |
 |---|---|---|
@@ -273,7 +273,7 @@ graph TD
 - 目标/URL/端口/字典路径全部正则校验，非法立即拒绝
 - 危险字符（`; | & \` $ () {}` 等）注入黑名单
 
-### 第三层：目标授权范围守卫（`kalitui/scope.py`，白帽合规）
+### 第三层：目标授权范围守卫（`DeepKali/scope.py`，白帽合规）
 
 - 从命令中提取外部目标（公网 IP / 域名 / URL 主机 / user@host），未授权一律弹窗确认
 - **独立于危险命令策略**：即使 `/danger always_allow`（危险命令自动放行），
@@ -301,10 +301,10 @@ graph TD
 
 ```bash
 git clone https://github.com/Kunspring/DeepKali.git
-cd kalitui
-./install.sh        # 创建 venv、装依赖、生成 ~/.local/bin/kalitui
-export KALITUI_API_KEY=sk-你的key
-kalitui
+cd DeepKali
+./install.sh        # 创建 venv、装依赖、生成 ~/.local/bin/DeepKali
+export DEEPKALI_API_KEY=sk-你的key
+DeepKali
 ```
 
 也可以手动：
@@ -312,7 +312,7 @@ kalitui
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m kalitui
+.venv/bin/python -m DeepKali
 ```
 
 ## ⚙️ 配置
@@ -321,16 +321,16 @@ python3 -m venv .venv
 
 | 环境变量 | 说明 | 默认 |
 |---|---|---|
-| `KALITUI_API_KEY` | API key（必填，否则进 demo 模式） | — |
-| `KALITUI_BASE_URL` | OpenAI 兼容 API 地址 | `https://api.deepseek.com/v1` |
-| `KALITUI_MODEL` | 模型名 | `deepseek-chat` |
-| `KALITUI_DEMO` | `1` 强制 demo 模式 | 自动 |
-| `KALITUI_WORKDIR` | agent 工作目录 | 当前目录 |
-| `KALITUI_SCOPE_POLICY` | 目标范围守卫 `ask` / `off` | `ask` |
-| `KALITUI_SCOPE_FILE` | 授权目标持久化文件 | `~/.config/kalitui/scope.json` |
+| `DEEPKALI_API_KEY` | API key（必填，否则进 demo 模式） | — |
+| `DEEPKALI_BASE_URL` | OpenAI 兼容 API 地址 | `https://api.deepseek.com/v1` |
+| `DEEPKALI_MODEL` | 模型名 | `deepseek-chat` |
+| `DEEPKALI_DEMO` | `1` 强制 demo 模式 | 自动 |
+| `DEEPKALI_WORKDIR` | agent 工作目录 | 当前目录 |
+| `DEEPKALI_SCOPE_POLICY` | 目标范围守卫 `ask` / `off` | `ask` |
+| `DEEPKALI_SCOPE_FILE` | 授权目标持久化文件 | `~/.config/DeepKali/scope.json` |
 
-首次运行后生成 `~/.config/kalitui/config.json` 持久配置，可直接编辑。
-命令行参数：`kalitui --model deepseek-reasoner --danger always_allow --demo`。
+首次运行后生成 `~/.config/DeepKali/config.json` 持久配置，可直接编辑。
+命令行参数：`DeepKali --model deepseek-reasoner --danger always_allow --demo`。
 
 ## 💬 使用
 
@@ -371,8 +371,8 @@ python3 -m venv .venv
 ## 🏗 架构
 
 ```
-kalitui/
-├── kalitui/
+DeepKali/
+├── DeepKali/
 │   ├── app.py        # Textual TUI：双面板、确认弹窗、斜杠命令、状态栏
 │   ├── llm.py        # Agent：OpenAI 兼容客户端 + 工具调用循环 + 档案动态注入
 │   │                 #        + 证据闸门 / 防误停 / 反思升级（VulnClaw 精华）
@@ -436,7 +436,7 @@ kalitui/
 
 ### 新增一个工具档案
 
-在 `kalitui/profiles/` 下新建 `xxx.py`，继承 `ToolProfile`，三步完成：
+在 `DeepKali/profiles/` 下新建 `xxx.py`，继承 `ToolProfile`，三步完成：
 
 ```python
 from .base import ToolProfile, check_installed, sanitize_int

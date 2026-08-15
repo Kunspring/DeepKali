@@ -8,13 +8,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.airmon import _build_cmd as airmon_cmd  # noqa: E402
-from kalitui.profiles.impexec import _build_cmd as impexec_cmd  # noqa: E402
-from kalitui.profiles.macchanger import _build_cmd as mac_cmd  # noqa: E402
-from kalitui.profiles.netdiscover import _build_cmd as netdisc_cmd  # noqa: E402
-from kalitui.profiles.wfuzz import _build_cmd as wfuzz_cmd  # noqa: E402
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.airmon import _build_cmd as airmon_cmd  # noqa: E402
+from DeepKali.profiles.impexec import _build_cmd as impexec_cmd  # noqa: E402
+from DeepKali.profiles.macchanger import _build_cmd as mac_cmd  # noqa: E402
+from DeepKali.profiles.netdiscover import _build_cmd as netdisc_cmd  # noqa: E402
+from DeepKali.profiles.wfuzz import _build_cmd as wfuzz_cmd  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 

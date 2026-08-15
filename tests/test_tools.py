@@ -8,7 +8,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.tools import ApprovalRequest, Executor, ToolError  # noqa: E402
+from DeepKali.tools import ApprovalRequest, Executor, ToolError  # noqa: E402
 
 
 def _auto_approve(allow: bool, delay: float = 0.0):
@@ -22,9 +22,9 @@ def _auto_approve(allow: bool, delay: float = 0.0):
 
 async def test_run_command_safe() -> None:
     ex = Executor()
-    out = await ex.execute("run_command", {"command": "echo kalitui-ok"})
-    assert "kalitui-ok" in out
-    assert out.startswith("命令: echo kalitui-ok")
+    out = await ex.execute("run_command", {"command": "echo DeepKali-ok"})
+    assert "DeepKali-ok" in out
+    assert out.startswith("命令: echo DeepKali-ok")
 
 
 async def test_run_command_nonzero_shows_code() -> None:
@@ -41,7 +41,7 @@ async def test_run_command_timeout() -> None:
 
 async def test_dangerous_denied() -> None:
     ex = Executor(request_approval=_auto_approve(False))
-    out = await ex.execute("run_command", {"command": "rm -rf /tmp/kalitui-x"})
+    out = await ex.execute("run_command", {"command": "rm -rf /tmp/DeepKali-x"})
     assert "被用户拒绝" in out
 
 
@@ -83,7 +83,7 @@ async def test_read_file_and_missing() -> None:
 
 
 async def test_write_file_confirm() -> None:
-    p = Path("/tmp/kalitui-write-test.txt")
+    p = Path("/tmp/DeepKali-write-test.txt")
     p.write_text("old")
     ex = Executor(request_approval=_auto_approve(True))
     out = await ex.execute("write_file", {"path": str(p), "content": "new"})
@@ -92,7 +92,7 @@ async def test_write_file_confirm() -> None:
 
 
 async def test_write_file_denied() -> None:
-    p = Path("/tmp/kalitui-write-test2.txt")
+    p = Path("/tmp/DeepKali-write-test2.txt")
     p.write_text("old")
     ex = Executor(request_approval=_auto_approve(False))
     out = await ex.execute("write_file", {"path": str(p), "content": "new"})
@@ -200,7 +200,7 @@ async def test_ask_user_no_ui() -> None:
 
 
 async def test_execute_needs_approval_passthrough() -> None:
-    from kalitui.tools import NeedsApproval
+    from DeepKali.tools import NeedsApproval
 
     class BoomExt:
         async def execute(self, name, arguments):
@@ -224,7 +224,7 @@ async def test_execute_cancelled_passthrough() -> None:
 
 
 def test_format_tool_result_unserializable() -> None:
-    from kalitui.tools import format_tool_result
+    from DeepKali.tools import format_tool_result
 
     out = format_tool_result("probe", {"tags": {"a", "b"}}, "data")
     assert "工具 probe(" in out
@@ -233,7 +233,7 @@ def test_format_tool_result_unserializable() -> None:
 
 async def test_sysinfo_oserror_fallback(monkeypatch) -> None:
     """os.popen 抛 OSError → （无）兜底。"""
-    import kalitui.tools as T
+    import DeepKali.tools as T
 
     real_popen = T.os.popen
 
@@ -253,7 +253,7 @@ async def test_sysinfo_oserror_fallback(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_execute_cancel_kills_group(monkeypatch):
     """execute 中任务被取消 → kill_group + 透传 CancelledError。"""
-    from kalitui import tools as T
+    from DeepKali import tools as T
 
     killed = []
 
@@ -273,7 +273,7 @@ async def test_execute_cancel_kills_group(monkeypatch):
 @pytest.mark.asyncio
 async def test_kill_group_fallback(monkeypatch):
     """killpg 失败 → proc.kill() 兜底；再失败 → 静默。"""
-    from kalitui import tools as T
+    from DeepKali import tools as T
 
     class FakeProc:
         def __init__(self):

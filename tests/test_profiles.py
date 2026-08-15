@@ -8,25 +8,25 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import (  # noqa: E402
+from DeepKali.profiles import (  # noqa: E402
     REGISTRY,
     all_schemas,
     inventory,
     lore_for,
     register_extensions,
 )
-from kalitui.profiles.base import (  # noqa: E402
+from DeepKali.profiles.base import (  # noqa: E402
     sanitize_int,
     sanitize_ports,
     sanitize_target,
     sanitize_url,
     sanitize_wordlist,
 )
-from kalitui.profiles.gobuster import _build_cmd as gobuster_cmd  # noqa: E402
-from kalitui.profiles.msf import _build_script as msf_script  # noqa: E402
-from kalitui.profiles.nikto import _build_cmd as nikto_cmd  # noqa: E402
-from kalitui.profiles.nmap import _build_cmd as nmap_cmd, _summarize  # noqa: E402
-from kalitui.tools import Executor  # noqa: E402
+from DeepKali.profiles.gobuster import _build_cmd as gobuster_cmd  # noqa: E402
+from DeepKali.profiles.msf import _build_script as msf_script  # noqa: E402
+from DeepKali.profiles.nikto import _build_cmd as nikto_cmd  # noqa: E402
+from DeepKali.profiles.nmap import _build_cmd as nmap_cmd, _summarize  # noqa: E402
+from DeepKali.tools import Executor  # noqa: E402
 
 # ---------------- 参数校验 ----------------
 
@@ -191,7 +191,7 @@ class StubEx:
 
 @pytest.mark.asyncio
 async def test_profile_executors_route_to_run_command() -> None:
-    from kalitui.tools import ToolError
+    from DeepKali.tools import ToolError
 
     stub = StubEx()
     register_extensions(stub)  # type: ignore[arg-type]
@@ -220,7 +220,7 @@ async def test_profile_executors_route_to_run_command() -> None:
 
 @pytest.mark.asyncio
 async def test_nmap_scan_real_localhost() -> None:
-    from kalitui.profiles.nmap import NmapProfile
+    from DeepKali.profiles.nmap import NmapProfile
 
     ex = Executor()
     NmapProfile().register(ex)
@@ -234,7 +234,7 @@ async def test_nmap_scan_real_localhost() -> None:
 
 def test_registry_schema_exec_consistency() -> None:
     """每个 schema 工具名 ↔ 每个 exec_ 方法双向对应（57 工具全量）。"""
-    from kalitui.profiles import REGISTRY, all_schemas, register_extensions
+    from DeepKali.profiles import REGISTRY, all_schemas, register_extensions
 
     assert len(REGISTRY) >= 55
 

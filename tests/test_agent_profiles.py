@@ -9,8 +9,8 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.llm import Agent  # noqa: E402
-from kalitui.tools import Executor  # noqa: E402
+from DeepKali.llm import Agent  # noqa: E402
+from DeepKali.tools import Executor  # noqa: E402
 from tests.test_agent import MockOpenAI  # noqa: E402
 
 

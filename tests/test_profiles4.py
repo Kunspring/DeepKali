@@ -8,13 +8,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.evilwinrm import _build_cmd as winrm_cmd  # noqa: E402
-from kalitui.profiles.msfvenom import _build_cmd as msfvenom_cmd  # noqa: E402
-from kalitui.profiles.nuclei import _build_cmd as nuclei_cmd  # noqa: E402
-from kalitui.profiles.responder import _build_cmd as responder_cmd  # noqa: E402
-from kalitui.profiles.tcpdump import _build_cmd as tcpdump_cmd  # noqa: E402
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.evilwinrm import _build_cmd as winrm_cmd  # noqa: E402
+from DeepKali.profiles.msfvenom import _build_cmd as msfvenom_cmd  # noqa: E402
+from DeepKali.profiles.nuclei import _build_cmd as nuclei_cmd  # noqa: E402
+from DeepKali.profiles.responder import _build_cmd as responder_cmd  # noqa: E402
+from DeepKali.profiles.tcpdump import _build_cmd as tcpdump_cmd  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 
@@ -139,7 +139,7 @@ class StubEx4:
 
 @pytest.mark.asyncio
 async def test_fourth_batch_route_to_run_command(monkeypatch: pytest.MonkeyPatch) -> None:
-    import kalitui.profiles.nuclei as nuc_mod
+    import DeepKali.profiles.nuclei as nuc_mod
 
     monkeypatch.setattr(nuc_mod, "check_installed", lambda _b: True)  # 本机未装 nuclei，测试时跳过检查
     stub = StubEx4()

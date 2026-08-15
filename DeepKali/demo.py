@@ -136,7 +136,7 @@ class DemoAgent:
             f"（Demo 模式：脚本大脑，未配置 API key）\n"
             f"我看了下这台 Kali：\n{sysinfo}\n\n"
             f"试试让我「扫描 127.0.0.1」或「爆破测试」，可以体验工具调用和安全确认弹窗。\n"
-            f"配置方法：export KALITUI_API_KEY=sk-xxx 后重启，就是真正的 AI 了。"
+            f"配置方法：export DEEPKALI_API_KEY=sk-xxx 后重启，就是真正的 AI 了。"
         )
 
     def export_findings_csv(self, path: str | None = None) -> str:
@@ -147,7 +147,7 @@ class DemoAgent:
         from .evidence import severity_of, sort_findings
 
         if path is None:
-            out_dir = os.path.join(os.getcwd(), "kalitui-reports")
+            out_dir = os.path.join(os.getcwd(), "DeepKali-reports")
             os.makedirs(out_dir, exist_ok=True)
             path = os.path.join(out_dir, "findings.csv")
         with open(path, "w", newline="", encoding="utf-8-sig") as f:
@@ -170,13 +170,13 @@ class DemoAgent:
         from .evidence import severity_of, sort_findings
 
         if path is None:
-            out_dir = os.path.join(os.getcwd(), "kalitui-reports")
+            out_dir = os.path.join(os.getcwd(), "DeepKali-reports")
             os.makedirs(out_dir, exist_ok=True)
             path = os.path.join(out_dir, f"report-{datetime.now():%Y%m%d-%H%M%S}.md")
 
         findings = sort_findings(self.memory.findings)
         lines = [
-            "# KaliTUI 侦察复盘报告",
+            "# DeepKali 侦察复盘报告",
             "",
             f"- 生成时间: {datetime.now():%Y-%m-%d %H:%M:%S}",
             f"- 会话消息: {len(self.messages)} 条",

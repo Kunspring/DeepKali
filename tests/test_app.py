@@ -10,25 +10,25 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui import config as kconfig  # noqa: E402
-from kalitui.app import ApprovalModal, KaliTUIApp  # noqa: E402
-from kalitui.llm import Agent  # noqa: E402
-from kalitui.demo import DemoAgent  # noqa: E402
-from kalitui.config import Config  # noqa: E402
+from DeepKali import config as kconfig  # noqa: E402
+from DeepKali.app import ApprovalModal, DeepKaliApp  # noqa: E402
+from DeepKali.llm import Agent  # noqa: E402
+from DeepKali.demo import DemoAgent  # noqa: E402
+from DeepKali.config import Config  # noqa: E402
 
-# 测试期间会话日志写到临时目录，不污染真实 ~/.local/share/kalitui
-kconfig.SESSION_DIR = Path(tempfile.mkdtemp(prefix="kalitui-test-")) / "sessions"
+# 测试期间会话日志写到临时目录，不污染真实 ~/.local/share/DeepKali
+kconfig.SESSION_DIR = Path(tempfile.mkdtemp(prefix="DeepKali-test-")) / "sessions"
 
 
-def _make_app() -> KaliTUIApp:
+def _make_app() -> DeepKaliApp:
     cfg = Config()
     cfg.demo = True
     cfg.danger_policy = "ask"
     cfg.workdir = str(Path.cwd())
-    return KaliTUIApp(cfg)
+    return DeepKaliApp(cfg)
 
 
-async def _wait_idle(app: KaliTUIApp, timeout: float = 20.0) -> None:
+async def _wait_idle(app: DeepKaliApp, timeout: float = 20.0) -> None:
     """等 agent 结束（busy=False），期间让出事件循环。"""
     deadline = asyncio.get_event_loop().time() + timeout
     while app.busy and asyncio.get_event_loop().time() < deadline:
@@ -36,7 +36,7 @@ async def _wait_idle(app: KaliTUIApp, timeout: float = 20.0) -> None:
     assert not app.busy, "agent 超时未结束"
 
 
-def _chat_text(app: KaliTUIApp) -> str:
+def _chat_text(app: DeepKaliApp) -> str:
     log = app.query_one("#chat")
     return "\n".join(str(line) for line in log.lines)
 
@@ -215,8 +215,8 @@ async def test_resume_command_demo() -> None:
 @pytest.mark.asyncio
 async def test_demo_agent_evidence_and_report() -> None:
     """demo 模式也产生证据，/report 可生成报告。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     events: list[str] = []
 
@@ -247,8 +247,8 @@ async def test_demo_agent_evidence_and_report() -> None:
 @pytest.mark.asyncio
 async def test_demo_agent_extra_branches() -> None:
     """demo 脚本大脑的 hydra（拒绝路径）/msf/reset 分支。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     class DenyExecutor(Executor):
         """execute 直接抛 NeedsApproval（模拟用户拒绝）。"""
@@ -300,8 +300,8 @@ async def test_demo_agent_extra_branches() -> None:
 @pytest.mark.asyncio
 async def test_demo_agent_tool_error_paths() -> None:
     """demo tool() 的 NeedsApproval / ToolError 分支直接覆盖。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import NeedsApproval, ToolError
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import NeedsApproval, ToolError
 
     class BoomExecutor:
         def __init__(self, exc):
@@ -419,8 +419,8 @@ async def test_slash_commands_demo() -> None:
 @pytest.mark.asyncio
 async def test_demo_export_findings_csv(tmp_path) -> None:
     """DemoAgent.export_findings_csv 与 Agent 同格式。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -438,7 +438,7 @@ async def test_demo_export_findings_csv(tmp_path) -> None:
 # ---------------------------------------------------------------------------
 from textual.app import App as _TextualApp
 from textual.widgets import Input, Static
-from kalitui.app import ApprovalModal
+from DeepKali.app import ApprovalModal
 
 
 class _ModalHost(_TextualApp):
@@ -531,9 +531,9 @@ async def test_ask_user_modal_escape_denies() -> None:
 @pytest.mark.asyncio
 async def test_demo_resume_restore_and_events(tmp_path) -> None:
     """demo 模式 /resume 恢复证据；_on_event 各事件类型渲染。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.evidence import AgentMemory
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.evidence import AgentMemory
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -598,7 +598,7 @@ class _Err500Server:
 @pytest.mark.asyncio
 async def test_real_mode_llm_error_path() -> None:
     """真实模式 API 500 → UI 显示错误与排查提示。"""
-    from kalitui.app import KaliTUIApp
+    from DeepKali.app import DeepKaliApp
 
     server = _Err500Server()
     await server.start()
@@ -608,7 +608,7 @@ async def test_real_mode_llm_error_path() -> None:
     cfg.base_url = f"http://127.0.0.1:{server.port}/v1"
     cfg.model = "test-model"
     cfg.workdir = str(Path.cwd())
-    app = KaliTUIApp(cfg)
+    app = DeepKaliApp(cfg)
     try:
         async with app.run_test(size=(120, 40)) as pilot:
             await pilot.pause()
@@ -618,7 +618,7 @@ async def test_real_mode_llm_error_path() -> None:
             await _wait_idle(app)
             text = _chat_text(app)
             assert "检查" in text  # 排查提示
-            assert "KALITUI_API_KEY" in text
+            assert "DEEPKALI_API_KEY" in text
     finally:
         await server.stop()
 
@@ -626,8 +626,8 @@ async def test_real_mode_llm_error_path() -> None:
 @pytest.mark.asyncio
 async def test_resume_success_path(tmp_path, monkeypatch) -> None:
     """resume.json 存在 → /resume 恢复证据与消息。"""
-    import kalitui.app as app_mod
-    from kalitui.evidence import AgentMemory
+    import DeepKali.app as app_mod
+    from DeepKali.evidence import AgentMemory
 
     monkeypatch.setattr(app_mod, "SESSION_DIR", tmp_path)
     mem = AgentMemory()
@@ -724,13 +724,13 @@ async def test_interrupt_cancels_busy_task() -> None:
 @pytest.mark.asyncio
 async def test_no_api_key_auto_demo() -> None:
     """api_key 为空且 demo=False → 自动进入 demo 模式（L204）。"""
-    from kalitui.app import KaliTUIApp
+    from DeepKali.app import DeepKaliApp
 
     cfg = Config()
     cfg.demo = False
     cfg.api_key = ""
     cfg.workdir = str(Path.cwd())
-    app = KaliTUIApp(cfg)
+    app = DeepKaliApp(cfg)
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
         assert isinstance(app.agent, DemoAgent)
@@ -757,7 +757,7 @@ async def test_report_command_ok(tmp_path) -> None:
 @pytest.mark.asyncio
 async def test_resume_bad_json_shows_error(tmp_path, monkeypatch) -> None:
     """resume.json 损坏 → 提示恢复失败，不崩溃。"""
-    import kalitui.app as app_mod
+    import DeepKali.app as app_mod
 
     monkeypatch.setattr(app_mod, "SESSION_DIR", tmp_path)
     (tmp_path / "resume.json").write_text("{broken json", encoding="utf-8")
@@ -787,9 +787,9 @@ async def test_quit_command_exits_app() -> None:
 @pytest.mark.asyncio
 async def test_mount_hints_resume_real_mode(tmp_path, monkeypatch) -> None:
     """真实模式 + 存在 resume.json → 启动提示上次会话可恢复。"""
-    import kalitui.app as app_mod
-    from kalitui.app import KaliTUIApp
-    from kalitui.evidence import AgentMemory
+    import DeepKali.app as app_mod
+    from DeepKali.app import DeepKaliApp
+    from DeepKali.evidence import AgentMemory
 
     monkeypatch.setattr(app_mod, "SESSION_DIR", tmp_path)
     mem = AgentMemory()
@@ -804,7 +804,7 @@ async def test_mount_hints_resume_real_mode(tmp_path, monkeypatch) -> None:
     cfg.api_key = "x"  # 非空 → 不自动切 demo
     cfg.base_url = "http://127.0.0.1:9/v1"
     cfg.workdir = str(Path.cwd())
-    app = KaliTUIApp(cfg)
+    app = DeepKaliApp(cfg)
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
         assert isinstance(app.agent, Agent)  # 真实模式
@@ -884,14 +884,14 @@ async def test_statusbar_model_placeholder() -> None:
 @pytest.mark.asyncio
 async def test_internal_error_path(monkeypatch) -> None:
     """真实模式 agent.chat 抛普通异常 → 内部错误提示。"""
-    from kalitui.app import KaliTUIApp
+    from DeepKali.app import DeepKaliApp
 
     cfg = Config()
     cfg.demo = False
     cfg.api_key = "x"
     cfg.base_url = "http://127.0.0.1:9/v1"
     cfg.workdir = str(Path.cwd())
-    app = KaliTUIApp(cfg)
+    app = DeepKaliApp(cfg)
 
     class BoomAgent:
         model = "boom"
@@ -914,8 +914,8 @@ async def test_internal_error_path(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_demo_default_overview_branch() -> None:
     """demo 默认分支：无关键词输入 → 系统概览。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -927,23 +927,23 @@ async def test_demo_default_overview_branch() -> None:
 
 
 def test_demo_export_default_dir(monkeypatch, tmp_path) -> None:
-    """export_findings_csv 无路径 → 默认 kalitui-reports/findings.csv。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    """export_findings_csv 无路径 → 默认 DeepKali-reports/findings.csv。"""
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     monkeypatch.chdir(tmp_path)
     agent = DemoAgent(executor=Executor(danger_policy="always_allow"), emit=lambda e: None)
     agent.memory.record("run_command", {"command": "x"}, "flag{demo_default_dir}")
     path = agent.export_findings_csv()
-    assert path == str(tmp_path / "kalitui-reports" / "findings.csv")
+    assert path == str(tmp_path / "DeepKali-reports" / "findings.csv")
     content = open(path, encoding="utf-8-sig").read()
     assert "flag{demo_default_dir}" in content
 
 
 def test_demo_write_report_with_findings(tmp_path) -> None:
     """write_report 有 findings 时渲染发现清单行。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     agent = DemoAgent(executor=Executor(danger_policy="always_allow"), emit=lambda e: None)
     agent.memory.record("run_command", {"command": "cat /flag.txt"}, "flag{top_secret}")
@@ -960,7 +960,7 @@ def test_session_logger_branches(tmp_path) -> None:
     """SessionLogger：无 path 忽略 + OSError 吞掉。"""
     import json
 
-    from kalitui.app import SessionLogger
+    from DeepKali.app import SessionLogger
 
     logger = SessionLogger()
     assert logger.path is None
@@ -1003,14 +1003,14 @@ async def test_scope_no_executor() -> None:
 @pytest.mark.asyncio
 async def test_report_generation_failure(monkeypatch) -> None:
     """/report 时 write_report 抛异常 → 报告生成失败提示。"""
-    from kalitui.app import KaliTUIApp
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.app import DeepKaliApp
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     cfg = Config()
     cfg.demo = True
     cfg.workdir = str(Path.cwd())
-    app = KaliTUIApp(cfg)
+    app = DeepKaliApp(cfg)
 
     def boom(self):
         raise RuntimeError("磁盘炸了")
@@ -1062,8 +1062,8 @@ async def test_interrupt_no_task() -> None:
 @pytest.mark.asyncio
 async def test_demo_joomla_and_bloodhound_branches() -> None:
     """demo 的 joomla / bloodhound 演示分支。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -1080,8 +1080,8 @@ async def test_demo_joomla_and_bloodhound_branches() -> None:
 @pytest.mark.asyncio
 async def test_resume_corrupt_json_tolerated(monkeypatch, tmp_path) -> None:
     """真实模式 resume.json 坏 JSON → 启动不崩不提示。"""
-    from kalitui import app as app_mod
-    from kalitui.app import KaliTUIApp
+    from DeepKali import app as app_mod
+    from DeepKali.app import DeepKaliApp
 
     monkeypatch.setattr(app_mod, "SESSION_DIR", tmp_path)
     (tmp_path / "resume.json").write_text("{broken json", encoding="utf-8")
@@ -1089,7 +1089,7 @@ async def test_resume_corrupt_json_tolerated(monkeypatch, tmp_path) -> None:
     cfg.demo = False
     cfg.api_key = "sk-test"
     cfg.workdir = str(Path.cwd())
-    app = KaliTUIApp(cfg)
+    app = DeepKaliApp(cfg)
     async with app.run_test(size=(120, 40)) as pilot:
         await pilot.pause()
         assert "发现上次会话" not in _chat_text(app)
@@ -1098,8 +1098,8 @@ async def test_resume_corrupt_json_tolerated(monkeypatch, tmp_path) -> None:
 @pytest.mark.asyncio
 async def test_export_oserror_reported(monkeypatch) -> None:
     """/export 写盘失败 → 导出失败提示。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     app = _make_app()
     async with app.run_test(size=(120, 40)) as pilot:
@@ -1122,10 +1122,10 @@ async def test_export_oserror_reported(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_unmount_save_and_aclose_failures(monkeypatch) -> None:
     """on_unmount：save_state 抛异常 / aclose RuntimeError → 不崩。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
-    import kalitui.app as app_mod
+    import DeepKali.app as app_mod
 
     app = _make_app()
     async with app.run_test(size=(120, 40)) as pilot:
@@ -1177,8 +1177,8 @@ async def test_escape_dismisses_modal_as_deny() -> None:
 @pytest.mark.asyncio
 async def test_export_success_path() -> None:
     """/export 成功 → 已导出提示（不 monkeypatch）。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     app = _make_app()
     async with app.run_test(size=(120, 40)) as pilot:
@@ -1232,7 +1232,7 @@ async def test_modal_dismissed_by_other_path() -> None:
 @pytest.mark.asyncio
 async def test_new_command_unlink_oserror(monkeypatch) -> None:
     """/new 清除 resume.json 遇 OSError → 吞掉不崩。"""
-    import kalitui.app as app_mod
+    import DeepKali.app as app_mod
 
     def boom_unlink(*a, **k):
         raise OSError("无法删除")
@@ -1265,8 +1265,8 @@ async def test_unmount_cancels_pending_task() -> None:
 @pytest.mark.asyncio
 async def test_exception_cleanup_dismisses_modal(monkeypatch) -> None:
     """chat 异常时若 modal 仍在屏幕 → dismiss(None) 清理。"""
-    from kalitui.app import ApprovalModal
-    from kalitui.tools import Executor
+    from DeepKali.app import ApprovalModal
+    from DeepKali.tools import Executor
 
     app = _make_app()
     async with app.run_test(size=(120, 40)) as pilot:
@@ -1292,8 +1292,8 @@ async def test_exception_cleanup_dismisses_modal(monkeypatch) -> None:
 @pytest.mark.asyncio
 async def test_demo_masscan_kerbrute_whatweb_branches() -> None:
     """demo 的 masscan / kerbrute / whatweb 演示分支。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -1310,8 +1310,8 @@ async def test_demo_masscan_kerbrute_whatweb_branches() -> None:
 @pytest.mark.asyncio
 async def test_demo_drupwn_branch() -> None:
     """demo 的 drupwn 演示分支。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -1324,8 +1324,8 @@ async def test_demo_drupwn_branch() -> None:
 @pytest.mark.asyncio
 async def test_demo_subfinder_branch() -> None:
     """demo 的 subfinder 演示分支。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -1338,8 +1338,8 @@ async def test_demo_subfinder_branch() -> None:
 @pytest.mark.asyncio
 async def test_demo_dnsx_branch() -> None:
     """demo 的 dnsx 演示分支。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass
@@ -1352,8 +1352,8 @@ async def test_demo_dnsx_branch() -> None:
 @pytest.mark.asyncio
 async def test_demo_katana_branch() -> None:
     """demo 的 katana 演示分支。"""
-    from kalitui.demo import DemoAgent
-    from kalitui.tools import Executor
+    from DeepKali.demo import DemoAgent
+    from DeepKali.tools import Executor
 
     async def emit(e):
         pass

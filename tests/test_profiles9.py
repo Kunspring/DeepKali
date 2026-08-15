@@ -8,13 +8,13 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
-from kalitui.profiles.cewl import _build_cmd as cewl_cmd  # noqa: E402
-from kalitui.profiles.hashid import _build_cmd as hashid_cmd  # noqa: E402
-from kalitui.profiles.smtpenum import _build_cmd as smtpenum_cmd  # noqa: E402
-from kalitui.profiles.testssl import _bin, _build_cmd as tssl_cmd  # noqa: E402
-from kalitui.profiles.theharvester import _build_cmd as harvest_cmd  # noqa: E402
-from kalitui.safety import classify  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for, register_extensions  # noqa: E402
+from DeepKali.profiles.cewl import _build_cmd as cewl_cmd  # noqa: E402
+from DeepKali.profiles.hashid import _build_cmd as hashid_cmd  # noqa: E402
+from DeepKali.profiles.smtpenum import _build_cmd as smtpenum_cmd  # noqa: E402
+from DeepKali.profiles.testssl import _bin, _build_cmd as tssl_cmd  # noqa: E402
+from DeepKali.profiles.theharvester import _build_cmd as harvest_cmd  # noqa: E402
+from DeepKali.safety import classify  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 

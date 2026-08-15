@@ -8,12 +8,12 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from kalitui.profiles import REGISTRY, all_schemas, lore_for  # noqa: E402
-from kalitui.profiles.crack import _check_hash  # noqa: E402
-from kalitui.profiles.hydra import _build_cmd as hydra_cmd  # noqa: E402
-from kalitui.profiles.searchsploit import SploitProfile  # noqa: E402
-from kalitui.profiles.sqlmap import _build_cmd as sqlmap_cmd  # noqa: E402
-from kalitui.profiles.wpscan import _build_cmd as wpscan_cmd  # noqa: E402
+from DeepKali.profiles import REGISTRY, all_schemas, lore_for  # noqa: E402
+from DeepKali.profiles.crack import _check_hash  # noqa: E402
+from DeepKali.profiles.hydra import _build_cmd as hydra_cmd  # noqa: E402
+from DeepKali.profiles.searchsploit import SploitProfile  # noqa: E402
+from DeepKali.profiles.sqlmap import _build_cmd as sqlmap_cmd  # noqa: E402
+from DeepKali.profiles.wpscan import _build_cmd as wpscan_cmd  # noqa: E402
 
 # ---------------- 命令构造与校验 ----------------
 
@@ -142,7 +142,7 @@ class StubEx2:
 
 @pytest.mark.asyncio
 async def test_second_batch_route_to_run_command() -> None:
-    from kalitui.profiles import register_extensions
+    from DeepKali.profiles import register_extensions
 
     stub = StubEx2()
     register_extensions(stub)  # type: ignore[arg-type]
@@ -175,9 +175,9 @@ async def test_second_batch_route_to_run_command() -> None:
     name, args = stub.calls[-1]
     assert name == "run_command"
     assert "hashcat -m 0" in args["command"]
-    assert "/tmp" in args["command"] or "kalitui-crack" in args["command"]
+    assert "/tmp" in args["command"] or "DeepKali-crack" in args["command"]
     # 危险命令自动过安全层 → confirm 级
-    from kalitui.safety import classify
+    from DeepKali.safety import classify
 
     assert classify(args["command"]).level in ("confirm", "blocked")
 
@@ -187,7 +187,7 @@ async def test_second_batch_route_to_run_command() -> None:
 
 @pytest.mark.asyncio
 async def test_sploit_search_real() -> None:
-    from kalitui.tools import Executor
+    from DeepKali.tools import Executor
 
     ex = Executor()
     SploitProfile().register(ex)
