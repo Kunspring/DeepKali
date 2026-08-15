@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import shlex
 from typing import Any
 
 from .base import ToolProfile, check_installed, sanitize_int, sanitize_target
@@ -89,7 +88,11 @@ class SmtpEnumProfile(ToolProfile):
             return "smtp-user-enum 未安装（apt install smtp-user-enum）。"
         cmd, timeout = _build_cmd(args)
         raw = await self._run(ex, cmd, timeout=timeout)
-        valid = [l.strip() for l in raw.splitlines() if "valid user" in l.lower()]
+        valid = [
+            l.strip() for l in raw.splitlines()
+            if re.search(r"(?i)\bis a valid user\b", l)
+            and not re.search(r"(?i)\b(no|not)\s+valid", l)
+        ]
         if valid:
             head = [f"🎯 有效用户 ({len(valid)}):"]
             head += valid[:30]

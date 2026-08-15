@@ -36,6 +36,16 @@ SCHEMAS: list[dict[str, Any]] = [
                         "description": "自定义头，分号分隔，如 'Authorization: Bearer xyz; X-Forwarded-For: 127.0.0.1'",
                     },
                     "cookie": {"type": "string", "description": "Cookie，如 'session=abc123'"},
+                    "cookie_jar": {
+                        "type": "string",
+                        "enum": ["save", "use", "session"],
+                        "description": (
+                            "登录会话保持：save=把本次响应里的 Set-Cookie 存入会话 jar；"
+                            "use=带上会话 jar 里的 cookie（登录态请求）；"
+                            "session=先使用已存 cookie 再保存新的。典型用法："
+                            "先 POST 登录(save)，再 GET 受保护页面(use)。"
+                        ),
+                    },
                     "follow": {
                         "type": "boolean",
                         "description": "跟随重定向（-L），默认 false",
@@ -59,6 +69,8 @@ _URL_RE = re.compile(r"^https?://[^\s;|`$\\<>{}]{1,500}$", re.IGNORECASE)  # 允
 _HEADER_RE = re.compile(r"^[\w.-]+:\s*[^\r\n;]{1,200}(;\s*[\w.-]+:\s*[^\r\n;]{1,200}){0,9}$")
 _DATA_RE = re.compile(r"^[\x20-\x7e]{0,4000}$")
 _COOKIE_RE = re.compile(r"^[\w;=, .@-]{1,300}$")
+# 会话 cookie jar：本进程内跨 http_req 调用共享（登录态保持）
+JAR_PATH = "/tmp/kalitui-session-cookies.txt"
 
 
 def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
@@ -67,7 +79,7 @@ def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
         raise ValueError(f"url 格式非法（仅允许 http/https）: {url!r}")
     method = str(args.get("method") or "GET").strip().upper()
     if method not in ("GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"):
-        raise ValueError(f"method 仅支持: GET/POST/PUT/DELETE/HEAD/OPTIONS")
+        raise ValueError("method 仅支持: GET/POST/PUT/DELETE/HEAD/OPTIONS")
     data = str(args.get("data") or "").strip()
     if data and not _DATA_RE.match(data):
         raise ValueError("data 仅允许可打印 ASCII")
@@ -77,7 +89,11 @@ def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
     cookie = str(args.get("cookie") or "").strip()
     if cookie and not _COOKIE_RE.match(cookie):
         raise ValueError(f"cookie 含非法字符: {cookie!r}")
-    max_bytes = sanitize_int(args.get("max_bytes"), 4000, 500, 20000, "max_bytes")
+    jar_mode = str(args.get("cookie_jar") or "").strip()
+    if jar_mode and jar_mode not in ("save", "use", "session"):
+        raise ValueError("cookie_jar 仅支持: save / use / session")
+    # 仅校验 max_bytes 合法性（钳制），截断在 exec 阶段按此值生效
+    sanitize_int(args.get("max_bytes"), 4000, 500, 20000, "max_bytes")
 
     parts = ["curl", "-s", "-o", "/dev/stdout", "-w", "'\\n%{http_code} %{size_download}'", "--max-time", "20"]
     if method != "GET":
@@ -91,6 +107,11 @@ def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
                 parts += ["-H", shlex.quote(h)]
     if cookie:
         parts += ["-b", shlex.quote(cookie)]
+    # 会话 jar：use/session 先带上已存 cookie，save/session 再保存新的
+    if jar_mode in ("use", "session"):
+        parts += ["-b", shlex.quote(JAR_PATH)]
+    if jar_mode in ("save", "session"):
+        parts += ["-c", shlex.quote(JAR_PATH)]
     if args.get("follow"):
         parts.append("-L")
     if args.get("insecure"):
@@ -99,7 +120,7 @@ def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
     return " ".join(parts), 40
 
 
-def _summarize(raw: str) -> str:
+def _summarize(raw: str, max_bytes: int = 4000) -> str:
     # 最后一行是 -w 输出的 状态码 大小
     lines = raw.splitlines()
     meta = lines[-1].strip() if lines else ""
@@ -111,8 +132,9 @@ def _summarize(raw: str) -> str:
         head.append(f"{icon} HTTP {code}（{size} bytes）")
         body = "\n".join(lines[:-1]).strip()
         if body:
-            head.append("响应体（截断）:")
-            head += body.splitlines()[:25]
+            head.append(f"响应体（截断至 {max_bytes} bytes）:")
+            # 先按字节截断，再分行限制条数（防单行巨长输出）
+            head += body[:max_bytes].splitlines()[:25]
             if len(body.splitlines()) > 25:
                 head.append(f"… 共 {len(body.splitlines())} 行")
     else:
@@ -128,6 +150,8 @@ class CurlProfile(ToolProfile):
     lore = """### curl 深度使用要点
 - 定位：Web 渗透最基础工具——验证 fuzz 命中、看响应差异、测接口行为。
 - 组合技：`-L` 跟跳转、`-k` 跳过证书、`-b` 带 cookie、`-H` 自定义头（X-Forwarded-For 绕过 IP 限制）。
+- 登录态保持：POST 登录时 cookie_jar=save 存下会话，之后访问受保护页面带 cookie_jar=use
+  （session=先带旧 cookie 再存新的）；cookie 文件在 /tmp/kalitui-session-cookies.txt。
 - 测 SQL 注入/目录穿越先看响应差异（长度/状态码/关键字），再上 sqlmap。
 - HEAD 方法快速看响应头（Server 版本、Set-Cookie 标志）；OPTIONS 看允许的方法。
 - 传参注意：-X 指定方法；--data-raw 不解析 @ 文件（防意外读文件）。"""
@@ -138,4 +162,5 @@ class CurlProfile(ToolProfile):
             return "curl 未安装（apt install curl）。"
         cmd, timeout = _build_cmd(args)
         raw = await self._run(ex, cmd, timeout=timeout)
-        return _summarize(raw)
+        max_bytes = sanitize_int(args.get("max_bytes"), 4000, 500, 20000, "max_bytes")
+        return _summarize(raw, max_bytes)

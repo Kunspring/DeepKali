@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from .base import ToolProfile, check_installed, sanitize_int, sanitize_target
+from .base import ToolProfile, check_installed, sanitize_int
 
 SCHEMAS: list[dict[str, Any]] = [
     {

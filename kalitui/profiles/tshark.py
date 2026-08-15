@@ -83,7 +83,7 @@ def _summarize(raw: str) -> str:
     ]
     head: list[str] = []
     if rows:
-        head.append(f"抓包明细（前 30 条）:")
+        head.append("抓包明细（前 30 条）:")
         head += rows[:30]
         if len(rows) > 30:
             head.append(f"… 共 {len(rows)} 条")

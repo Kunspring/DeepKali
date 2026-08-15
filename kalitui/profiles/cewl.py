@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import shlex
 from typing import Any
 
 from .base import ToolProfile, check_installed, sanitize_int

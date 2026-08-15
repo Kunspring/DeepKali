@@ -25,6 +25,7 @@ class Config:
     workdir: str = field(default_factory=os.getcwd)
     max_output_lines: int = 2000   # 单条命令输出送入上下文的行数上限
     danger_policy: str = "ask"     # ask | always_allow | always_block
+    scope_policy: str = "ask"      # ask（外部目标需授权确认） | off
     extra_system_prompt: str = ""
 
     @classmethod
@@ -46,6 +47,7 @@ class Config:
             "KALITUI_MODEL": "model",
             "KALITUI_DEMO": "demo",
             "KALITUI_WORKDIR": "workdir",
+            "KALITUI_SCOPE_POLICY": "scope_policy",
         }
         for env, attr in env_map.items():
             if os.environ.get(env):

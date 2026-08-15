@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import shlex
 from typing import Any
 
 from .base import ToolProfile, check_installed, sanitize_int
@@ -57,7 +56,7 @@ def _summarize(raw: str) -> str:
     weak = [l.strip() for l in raw.splitlines() if re.search(r"(RC4|DES|3DES|NULL|EXPORT|SSLv2|SSLv3)", l, re.IGNORECASE)]
     head: list[str] = []
     if proto:
-        head.append(f"支持的协议/套件（前 20）:")
+        head.append("支持的协议/套件（前 20）:")
         head += proto[:20]
         if len(proto) > 20:
             head.append(f"… 共 {len(proto)} 条")

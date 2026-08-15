@@ -84,7 +84,6 @@ def _summarize(raw: str) -> str:
     # 兼容新旧两种格式:
     #   旧版: [A] example.com 1.2.3.4
     #   新版: 2026-08-14T21:57:11.8 INFO \t A example.com 1.2.3.4
-    REC = r"(A|AAAA|CNAME|MX|NS|SOA|TXT|SRV|PTR)\s"
     records = []
     for l in raw.splitlines():
         l = l.strip()

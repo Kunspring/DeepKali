@@ -37,7 +37,7 @@ def sanitize_target(value: str, *, label: str = "目标") -> str:
     if _INJECTION.search(v) or not _TARGET_RE.match(v):
         raise ValueError(f"{label}格式非法（仅允许 IP/CIDR/域名）: {v!r}")
     # IPv4 CIDR 前缀必须 0-32
-    if "/" in v and not v.rsplit("/", 1)[1].isdigit():
+    if "/" in v and not v.rsplit("/", 1)[1].isdigit():  # pragma: no cover 防御：_TARGET_RE 已保证数字
         raise ValueError(f"{label} CIDR 前缀非法: {v!r}")
     if "/" in v and int(v.rsplit("/", 1)[1]) > 32:
         raise ValueError(f"{label} CIDR 前缀超过 32: {v!r}")
@@ -142,8 +142,8 @@ class ToolProfile:
 
     @staticmethod
     def _summary(raw: str, head: list[str], tail: int = 40) -> str:
-        """摘要 = 头部（关键发现）+ 原始输出尾部。"""
+        """摘要 = 头部（关键发现）+ 原始输出尾部。空输出也保留头部提示。"""
         lines = [l for l in raw.splitlines() if l.strip()]
         if not lines:
-            return raw
+            return "关键结果：\n" + "\n".join(head)
         return "关键结果：\n" + "\n".join(head) + "\n\n原始输出（尾部）:\n" + "\n".join(lines[-tail:])

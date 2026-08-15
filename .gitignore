@@ -17,3 +17,8 @@ Thumbs.db
 # 本地临时
 *.log
 /tmp/
+.coverage
+coverage.xml
+
+# KaliTUI 生成物
+kalitui-reports/

@@ -32,7 +32,6 @@ from . import APP_NAME, __version__
 from .config import Config, SESSION_DIR
 from .demo import DemoAgent
 from .llm import Agent, LLMError
-from .prompts import build_system_prompt
 from .tools import ApprovalRequest, Executor
 
 
@@ -91,7 +90,12 @@ class ApprovalModal(ModalScreen[dict]):
     def _finish(self, allow: bool, force: bool = False) -> None:
         if self._is_question:
             answer = self.query_one("#modal-answer", Input).value.strip()
-            self.dismiss({"allow": True, "edited": answer or "（用户跳过）", "force": False})
+            # 提问模式：提交(allow=True)/跳过与Esc(allow=False) 语义区分
+            self.dismiss({
+                "allow": allow,
+                "edited": answer or ("（用户跳过）" if allow else "（用户未回答）"),
+                "force": False,
+            })
         else:
             cmd = self.query_one("#modal-command", Input).value.strip() or self.command
             self.dismiss({"allow": allow, "edited": cmd, "force": force})
@@ -202,7 +206,10 @@ class KaliTUIApp(App[None]):
             request_approval=self._request_approval,
             danger_policy=cfg.danger_policy,
             max_output_lines=cfg.max_output_lines,
+            scope_policy=cfg.scope_policy,
         )
+        # 加载历史授权目标（白帽跨会话复用）
+        self.executor.scope.load_persisted()
         from .profiles import register_extensions
 
         register_extensions(self.executor)  # 深度定制工具挂载（demo/真实共用）
@@ -221,6 +228,7 @@ class KaliTUIApp(App[None]):
                 extra_system_prompt=cfg.extra_system_prompt,
                 executor=self.executor,
                 emit=self._on_event,
+                resume_path=str(SESSION_DIR / "resume.json"),
             )
         self.logger.start()
         chat = self.query_one("#chat", RichLog)
@@ -237,6 +245,18 @@ class KaliTUIApp(App[None]):
         chat.write(
             "[dim]试试：『扫描本机』『whoami』『爆破测试』；输入 /help 查看命令。[/dim]\n"
         )
+        # 会话恢复提示（白帽跨会话续挖）
+        resume_file = SESSION_DIR / "resume.json"
+        if not cfg.demo and resume_file.exists():
+            try:
+                data = json.loads(resume_file.read_text(encoding="utf-8"))
+                n = len(data.get("memory", {}).get("evidence", []))
+                if n > 0:
+                    chat.write(
+                        f"[dim][green]📎 发现上次会话（{n} 条证据），输入 /resume 继续。[/green][/dim]"
+                    )
+            except (json.JSONDecodeError, OSError):
+                pass
         self.query_one("#prompt", Input).focus()
         self._update_status()
 
@@ -266,6 +286,16 @@ class KaliTUIApp(App[None]):
             self.logger.log(type="tool_result", name=name, ok=ok, output=output[:4000])
         elif etype == "error":
             chat.write(f"[red]⚠ {event['message']}[/red]")
+        elif etype == "correction":
+            for hint in event.get("hints", []):
+                chat.write(f"[dim][yellow]🧭 {hint}[/yellow][/dim]")
+        elif etype == "evidence_gate":
+            if event.get("verdict") == "reject":
+                chat.write(f"[red]🔒 证据闸门拒绝结论：{event.get('reason', '')}[/red]")
+            else:
+                chat.write("[dim][green]✔ 结论通过证据闸门校验[/green][/dim]")
+        elif etype == "report":
+            chat.write(f"[green]📄 复盘报告已保存:[/green] [bold]{event.get('path', '')}[/bold]")
 
     # ---------------- 审批回调（agent 线程 → UI） ----------------
     def _request_approval(self, command: str, level: str, reason: str) -> ApprovalRequest:
@@ -348,8 +378,15 @@ class KaliTUIApp(App[None]):
                 "[bold]命令[/bold]\n"
                 "  /clear      清空聊天与工具输出\n"
                 "  /new        重置 agent 会话（清空上下文）\n"
+                "  /resume     恢复上次会话（证据记忆 + 对话历史）\n"
+                "  /targets    目标工作区：按目标统计证据/发现/事实\n"
+                "  /status     会话状态面板（模型/策略/证据/发现/目标）\n"
                 "  /danger     查看当前危险命令策略\n"
                 "  /danger ask|always_allow|always_block   设置策略\n"
+                "  /scope      查看目标授权范围（白帽合规守卫）\n"
+                "  /scope add <目标>…   授权目标（本会话不再询问）\n"
+                "  /report     基于当前证据手动生成复盘报告（bounty 风格）\n"
+                "  /export     导出发现 CSV（按严重度排序，Excel 可直接打开）\n"
                 "  /model      显示当前模型\n"
                 "  /quit       退出\n"
                 "[bold]按键[/bold]  Ctrl+C 中断  ·  q 退出  ·  Ctrl+L 清输出"
@@ -360,13 +397,21 @@ class KaliTUIApp(App[None]):
         elif cmd == "/new":
             if self.agent:
                 self.agent.reset()
-            chat.write("[dim]🔄 会话已重置。[/dim]")
+            # 清掉旧会话状态，避免下次启动误提示"可恢复"
+            try:
+                (SESSION_DIR / "resume.json").unlink(missing_ok=True)
+            except OSError:
+                pass
+            chat.write("[dim]🔄 会话已重置（旧状态已清除）。[/dim]")
         elif cmd == "/danger":
             if arg in ("ask", "always_allow", "always_block"):
                 self.config.danger_policy = arg
                 if self.executor:
                     self.executor.danger_policy = arg
-                chat.write(f"[green]✔ 危险命令策略 → {arg}[/green]")
+                tip = ""
+                if arg == "always_allow":
+                    tip = "\n[dim]⚠ 注意：目标范围守卫（/scope）仍生效，外部目标依然需要授权确认。[/dim]"
+                chat.write(f"[green]✔ 危险命令策略 → {arg}[/green]{tip}")
             else:
                 chat.write(
                     f"[dim]当前策略：[/dim][yellow]{self.config.danger_policy}[/yellow]"
@@ -375,6 +420,106 @@ class KaliTUIApp(App[None]):
         elif cmd == "/model":
             m = getattr(self.agent, "model", "demo")
             chat.write(f"[dim]当前模型：[/dim][yellow]{m}[/yellow]")
+        elif cmd == "/scope":
+            if not self.executor:
+                return
+            if arg == "off":
+                self.executor.scope.policy = "off"
+                chat.write("[yellow]⚠ 目标范围守卫已关闭（仅建议本机/内网自测时使用）[/yellow]")
+            elif arg == "ask":
+                self.executor.scope.policy = "ask"
+                chat.write("[green]✔ 目标范围守卫已开启（外部目标需授权确认）[/green]")
+            elif arg.startswith("add"):
+                targets = [t.strip() for t in arg[3:].replace(",", " ").split() if t.strip()]
+                if targets:
+                    self.executor.scope.authorize_all(targets)
+                    chat.write(
+                        "[green]✔ 已授权: [/green]"
+                        + " ".join(targets)
+                        + "\n[dim]支持 IP / 域名 / CIDR 网段（如 203.0.113.0/24），授权后不再询问。[/dim]"
+                    )
+                    chat.write(
+                        f"[green]✔ 已授权目标:[/green] {', '.join(targets)}"
+                        "（本会话不再询问，已保存，下次启动自动加载）"
+                    )
+                else:
+                    chat.write("[red]用法: /scope add <目标1> [目标2…][/red]")
+            else:
+                chat.write(self.executor.scope.summary())
+        elif cmd == "/report":
+            agent = getattr(self, "agent", None)
+            memory = getattr(agent, "memory", None)
+            if memory is None or not memory.evidence:
+                chat.write("[dim]当前没有可用的工具证据，先让 agent 跑点任务再生成报告。[/dim]")
+            else:
+                try:
+                    path = agent.write_report()
+                    chat.write(f"[green]📄 报告已生成:[/green] [bold]{path}[/bold]")
+                except Exception as e:  # noqa: BLE001
+                    chat.write(f"[red]报告生成失败: {e}[/red]")
+        elif cmd == "/resume":
+            agent = getattr(self, "agent", None)
+            if agent is None or not hasattr(agent, "restore_state"):
+                chat.write("[dim]当前模式不支持恢复。[/dim]")
+                return
+            resume_file = SESSION_DIR / "resume.json"
+            if not resume_file.exists():
+                chat.write("[dim]没有找到上次会话状态。[/dim]")
+                return
+            try:
+                data = json.loads(resume_file.read_text(encoding="utf-8"))
+                agent.restore_state(data)
+                n = len(agent.memory.evidence)
+                chat.write(
+                    f"[green]✔ 已恢复上次会话（{n} 条证据，{len(agent.messages)} 条对话）。[/green]\n"
+                    "[dim]可继续下达任务，或 /report 生成当前进展报告。[/dim]"
+                )
+                self._update_status()
+            except (json.JSONDecodeError, OSError) as e:
+                chat.write(f"[red]恢复失败: {e}[/red]")
+        elif cmd == "/targets":
+            memory = getattr(getattr(self, "agent", None), "memory", None)
+            if memory is None:
+                chat.write("[dim]当前模式没有目标工作区。[/dim]")
+            else:
+                chat.write(memory.targets_summary())
+        elif cmd == "/status":
+            agent = getattr(self, "agent", None)
+            memory = getattr(agent, "memory", None)
+            if agent is None:
+                chat.write("[dim]agent 未初始化。[/dim]")
+                return
+            lines = [f"模型: {getattr(agent, 'model', 'demo')}"]
+            lines.append(f"危险策略: {self.config.danger_policy}")
+            lines.append(f"范围守卫: {self.executor.scope.policy}")
+            if memory is not None:
+                lines.append(f"证据: {len(memory.evidence)} 条 · 发现: {len(memory.findings)} 条")
+                lines.append(f"高信号事实: {len(memory.pinned_facts)} 条")
+                targets = memory.target_stats()
+                if targets:
+                    lines.append("目标: " + ", ".join(f"{t['target']}({t['evidence']})" for t in targets[:8]))
+                gaps = memory.attack_surface_gaps()
+                if gaps:
+                    lines.append("未探索的高信号方向: " + " / ".join(gaps[:6]))
+            lines.append(f"会话消息: {len(agent.messages)} 条")
+            lines.append(f"工作目录: {self.config.workdir}")
+            chat.write("\n".join(lines))
+        elif cmd == "/export":
+            agent = getattr(self, "agent", None)
+            if agent is None or not hasattr(agent, "export_findings_csv"):
+                chat.write("[dim]当前模式不支持导出。[/dim]")
+                return
+            if not agent.memory.findings:
+                chat.write("[dim]还没有发现可导出。[/dim]")
+                return
+            try:
+                path = agent.export_findings_csv()
+                chat.write(
+                    f"[green]✔ 已导出 {len(agent.memory.findings)} 条发现 → {path}[/green]\n"
+                    "[dim]CSV 按严重度排序，utf-8-sig 编码可直接用 Excel/WPS 打开。[/dim]"
+                )
+            except OSError as e:
+                chat.write(f"[red]导出失败: {e}[/red]")
         elif cmd == "/quit":
             self.exit()
         else:
@@ -398,14 +543,23 @@ class KaliTUIApp(App[None]):
         model = getattr(self.agent, "model", "demo")
         if self.agent is None:
             model = "—"
+        scope_policy = getattr(self.executor, "scope", None)
+        scope_str = scope_policy.policy if scope_policy else "?"
         self.query_one("#statusbar", Static).update(
             f" {state}  │  模型: {model}  │  危险策略: {cfg.danger_policy}"
+            f"  │  范围守卫: {scope_str}"
             f"  │  cwd: {cfg.workdir}"
         )
 
     def on_unmount(self) -> None:
         if self.agent_task and not self.agent_task.done():
             self.agent_task.cancel()
+        # 保存会话状态（白帽跨会话续挖）
+        if self.agent and hasattr(self.agent, "save_state"):
+            try:
+                self.agent.save_state()
+            except Exception:  # noqa: BLE001
+                pass
         if self.agent and hasattr(self.agent, "aclose"):
             try:
                 loop = asyncio.get_event_loop()

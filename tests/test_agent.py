@@ -206,3 +206,85 @@ async def test_agent_loop_cap() -> None:
     finally:
         await agent.aclose()
         await mock.stop()
+
+
+# ---------------------------------------------------------------------------
+# 完整白帽会话：侦察 → 发现 flag → FINAL → 自动报告
+# ---------------------------------------------------------------------------
+class ReconExecutor:
+    """nmap 输出端口，read_file 输出 flag。"""
+
+    def __init__(self) -> None:
+        self.extensions: dict = {}
+
+    async def execute(self, name: str, arguments: dict) -> str:
+        if name == "run_command":
+            return "Nmap scan report for target.com\n80/tcp open http nginx\n443/tcp open https"
+        if name == "read_file":
+            return "flag{integr_42}"
+        return "STUB"
+
+
+@pytest.mark.asyncio
+async def test_full_bounty_session_with_auto_report(tmp_path) -> None:
+    """侦察工具 → 读 flag → FINAL 引用证据 → 报告自动生成。"""
+    server = MockOpenAI()
+    server.script = [
+        {
+            "content": "",
+            "tool_calls": [{
+                "id": "call_1",
+                "type": "function",
+                "function": {"name": "run_command",
+                             "arguments": json.dumps({"command": "nmap -sV target.com"})},
+            }],
+        },
+        {
+            "content": "",
+            "tool_calls": [{
+                "id": "call_2",
+                "type": "function",
+                "function": {"name": "read_file",
+                             "arguments": json.dumps({"path": "/flag.txt"})},
+            }],
+        },
+        {"content": "FINAL: flag{integr_42} [e002] 目标存在源码泄露且获得 flag。"},
+    ]
+    await server.start()
+    agent = Agent(
+        api_key="test",
+        base_url=f"http://127.0.0.1:{server.port}/v1",
+        model="test-model",
+        executor=ReconExecutor(),
+        auto_report=True,
+        workdir=str(tmp_path),
+    )
+    emitted: list[dict] = []
+    agent.emit = lambda e: emitted.append(e)
+    try:
+        reply = await agent.chat("对 target.com 做侦察并找 flag")
+    finally:
+        await agent.aclose()
+        await server.stop()
+
+    # 1) 最终回复含 flag
+    assert "flag{integr_42}" in reply
+
+    # 2) 证据链完整（e001 nmap / e002 flag）
+    eids = [e.id for e in agent.memory.evidence]
+    assert "e001" in eids and "e002" in eids
+    assert any(e.tool == "read_file" for e in agent.memory.evidence)
+
+    # 3) flag 被提取为 finding
+    assert any(f["type"] == "flag" and "integr_42" in f["value"] for f in agent.memory.findings)
+
+    # 4) 自动报告已生成（auto_report=True）
+    reports = list((tmp_path / "kalitui-reports").glob("*.md"))
+    assert reports, "报告文件未生成"
+    content = reports[0].read_text(encoding="utf-8")
+    assert "flag{integr_42}" in content
+    assert "80/tcp" in content or "http" in content  # 侦察时间线含 nmap 结果
+
+    # 5) FINAL 通过证据闸门（flag 逐字符出现在真实输出中）
+    assert not any(e.get("type") == "evidence_gate" and e.get("verdict") == "reject"
+                   for e in emitted)

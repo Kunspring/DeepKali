@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import re
-import shutil
 from typing import Any
 
-from .base import ToolProfile, check_installed, sanitize_int
+from .base import ToolProfile, check_installed
 
 SCHEMAS: list[dict[str, Any]] = [
     {
@@ -73,7 +72,7 @@ def _summarize(raw: str) -> str:
     weak = [l for l in results if re.search(r"(vulnerable|NOT ok|offered|expired)", l, re.IGNORECASE)]
     head: list[str] = []
     if results:
-        head.append(f"TLS 检测结果（前 30）:")
+        head.append("TLS 检测结果（前 30）:")
         head += results[:30]
     if weak:
         head.append(f"⚠ 弱点项 ({len(weak)}):")

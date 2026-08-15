@@ -5,7 +5,7 @@ from __future__ import annotations
 import shlex
 from typing import Any
 
-from .base import ToolProfile, check_installed, sanitize_target
+from .base import ToolProfile, check_installed
 
 _ACTIONS = ("run", "exploit", "check", "options", "info", "reload")
 

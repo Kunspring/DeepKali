@@ -81,7 +81,7 @@ def _summarize(raw: str) -> str:
     stats = [l.strip() for l in raw.splitlines() if "packets captured" in l]
     head: list[str] = []
     if packets:
-        head.append(f"抓包详情（前 25 条）:")
+        head.append("抓包详情（前 25 条）:")
         head += packets[:25]
         if len(packets) > 25:
             head.append(f"… 共 {len(packets)} 条")

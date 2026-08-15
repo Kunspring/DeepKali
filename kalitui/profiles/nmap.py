@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from .base import (
     ToolProfile,
     check_installed,
-    sanitize_int,
     sanitize_ports,
     sanitize_target,
 )
@@ -19,6 +19,7 @@ _SCAN_MODES: dict[str, str] = {
     "udp": "UDP 常用端口：-sU --top-ports 20",
     "ping": "主机发现（Ping 扫描）：-sn",
     "all": "全端口：-p- -T4（慢，慎重）",
+    "vuln": "漏洞脚本：-sV --script vuln -T4（较慢，仅授权目标）",
 }
 
 SCHEMAS: list[dict[str, Any]] = [
@@ -80,11 +81,13 @@ def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
         cmd = f"{base} -sV -sC -O -T4 {target}"
     elif mode == "udp":
         cmd = f"{base} -sU --top-ports 20 -T4 {target}"
+    elif mode == "vuln":
+        cmd = f"{base} -sV --script vuln -T4 {target}"
     else:  # all
         cmd = f"{base} -p- -T4 {target}"
-    if ports:
-        cmd = f"{base} -p{ports} {target}" if mode in ("quick", "version") else cmd
-    timeout = 600 if mode == "all" else (300 if mode in ("aggressive", "udp") else 180)
+    if ports and mode in ("quick", "version", "vuln"):
+        cmd = f"{base} -p{ports} {target}"
+    timeout = 600 if mode in ("all", "vuln") else (300 if mode in ("aggressive", "udp") else 180)
     return cmd, timeout
 
 
@@ -92,6 +95,7 @@ def _summarize(raw: str) -> str:
     open_ports: list[str] = []
     hosts_up = 0
     os_guess = ""
+    vuln_hits: list[str] = []
     for line in raw.splitlines():
         if re_search_port(line):
             open_ports.append(line.strip())
@@ -99,6 +103,8 @@ def _summarize(raw: str) -> str:
             hosts_up += 1
         if line.startswith("OS details:"):
             os_guess = line.split(":", 1)[1].strip()
+        if "|" in line and re.search(r"CVE-\d{4}-\d{4,}", line, re.IGNORECASE):
+            vuln_hits.append(line.strip().lstrip("|").strip()[:110])
     head: list[str] = []
     if hosts_up:
         head.append(f"存活主机: {hosts_up} 台")
@@ -111,6 +117,10 @@ def _summarize(raw: str) -> str:
         head.append("未发现开放端口（或全部过滤/关闭）")
     if os_guess:
         head.append(f"OS 猜测: {os_guess}")
+    if vuln_hits:
+        head.append(f"🎯 漏洞脚本命中 ({len(vuln_hits)}):")
+        head += [f"  {v}" for v in vuln_hits[:10]]
+        head.append("下一步：对命中项做验证（见 vuln_proof lore），确认可利用性后记录发现。")
     head.append("下一步建议：对开放端口做 version 扫描（scan_type=version）或针对性服务枚举。")
     return ToolProfile._summary(raw, head, tail=50)
 

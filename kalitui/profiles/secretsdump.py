@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-import shutil
 from typing import Any
 
 from .base import ToolProfile, check_installed, sanitize_target

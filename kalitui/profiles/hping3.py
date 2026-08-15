@@ -47,7 +47,7 @@ def _build_cmd(args: dict[str, Any]) -> tuple[str, int]:
     if mode == "icmp":
         return f"hping3 -1 -c {sanitize_int(args.get('count'), 3, 1, 20, 'count')} {host}", 30
     flag = {"syn": "-S", "ack": "-A", "fin": "-F"}[mode]
-    port = sanitize_int(args.get("port"), 0, 1, 65535, "port", strict=True)
+    port = sanitize_int(args.get("port"), 80, 1, 65535, "port")
     count = sanitize_int(args.get("count"), 3, 1, 20, "count")
     return f"hping3 {flag} -p {port} -c {count} {host}", 30
 
@@ -60,7 +60,7 @@ def _summarize(raw: str) -> str:
     ]
     head: list[str] = []
     if replies:
-        head.append(f"响应包（前 15 条）:")
+        head.append("响应包（前 15 条）:")
         head += replies[:15]
     else:
         head = ["无响应（目标不可达/端口被过滤/防火墙丢弃）"]

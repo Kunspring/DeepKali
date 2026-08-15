@@ -80,6 +80,9 @@ def test_nmap_cmd_modes() -> None:
     assert nmap_cmd({"target": "192.168.1.10", "scan_type": "ping"})[0] == "nmap -sn -T4 192.168.1.10"
     assert nmap_cmd({"target": "192.168.1.10", "scan_type": "udp"})[0] == "nmap -sU --top-ports 20 -T4 192.168.1.10"
     assert nmap_cmd({"target": "192.168.1.10", "scan_type": "all"})[0] == "nmap -p- -T4 192.168.1.10"
+    assert nmap_cmd({"target": "192.168.1.10", "scan_type": "vuln"})[0] == "nmap -sV --script vuln -T4 192.168.1.10"
+    assert nmap_cmd({"target": "h.example.com", "scan_type": "vuln", "ports": "80,443"})[0] == "nmap -p80,443 h.example.com"
+    assert nmap_cmd({"target": "192.168.1.10", "scan_type": "vuln"})[1] == 600  # 慢扫描长超时
     assert nmap_cmd({"target": "h.example.com", "ports": "22,80"})[0] == "nmap -p22,80 h.example.com"
     assert nmap_cmd({"target": "h.example.com", "sudo": True})[0].startswith("sudo nmap")
     with pytest.raises(ValueError):
@@ -136,6 +139,23 @@ Nmap done: 1 IP address (1 host up) scanned in 0.05 seconds"""
     assert "22/tcp   open  ssh" in s
     assert "存活主机: 1" in s
     assert "下一步建议" in s
+
+
+def test_nmap_summarize_vuln_hits() -> None:
+    raw = """Nmap scan report for target
+| ssl-heartbleed:
+|   VULNERABLE:
+|     OpenSSL 1.0.1 - Heartbleed
+|     CVE-2014-0160
+| http-shellshock:
+|   VULNERABLE:
+|     CVE-2014-6271
+80/tcp open http"""
+    s = _summarize(raw)
+    assert "漏洞脚本命中 (2)" in s
+    assert "CVE-2014-0160" in s
+    assert "CVE-2014-6271" in s
+    assert "vuln_proof" in s
 
 
 # ---------------- registry / 动态 lore ----------------
@@ -208,3 +228,54 @@ async def test_nmap_scan_real_localhost() -> None:
     out = await ex.execute("nmap_scan", {"target": "127.0.0.1", "scan_type": "quick"})
     assert "原始输出" in out  # 摘要格式
     assert "存活主机" in out or "开放端口" in out or "未发现开放端口" in out
+
+
+# ---------------- 注册表强一致性 ----------------
+
+def test_registry_schema_exec_consistency() -> None:
+    """每个 schema 工具名 ↔ 每个 exec_ 方法双向对应（57 工具全量）。"""
+    from kalitui.profiles import REGISTRY, all_schemas, register_extensions
+
+    assert len(REGISTRY) >= 55
+
+    # 1) 每个 schema 名都有对应 exec 方法
+    for sch in all_schemas():
+        name = sch["function"]["name"]
+        owner = next((p for p in REGISTRY if name in p.tool_names()), None)
+        assert owner is not None, f"{name} 没有归属 profile"
+        assert hasattr(owner, f"exec_{name}"), f"{name} 缺少 exec_{name}"
+
+    # 2) 每个 exec_ 方法都有对应 schema（双向）
+    for p in REGISTRY:
+        execs = [m for m in dir(p) if m.startswith("exec_")]
+        if not execs:
+            # lore-only profile：无 schema 无 exec
+            assert p.extra_schemas == [] and p.tool_names() == []
+            continue
+        for m in execs:
+            tname = m[5:]
+            assert tname in p.tool_names(), f"{p.name} 的 exec_{tname} 无 schema"
+        # 每个工具的 schema name 与 exec 名一致
+        for tname in p.tool_names():
+            assert hasattr(p, f"exec_{tname}"), f"{p.name} 的 {tname} 无 exec"
+
+    # 3) register_extensions 挂载全部工具
+    class Stub:
+        def __init__(self):
+            self.danger_policy = "ask"
+            self.extensions = {}
+
+    stub = Stub()
+    register_extensions(stub)  # type: ignore[arg-type]
+    assert len(stub.extensions) == len(all_schemas())
+    for sch in all_schemas():
+        assert sch["function"]["name"] in stub.extensions
+
+
+def test_new_tools_lore_matching() -> None:
+    """新增白帽工具的关键词触发 lore。"""
+    assert "提权" in lore_for([{"role": "user", "content": "我拿到 shell 了，帮我做提权枚举"}])
+    assert "snmp" in lore_for([{"role": "tool", "content": "snmp_enum 的结果"}])
+    assert "nfs" in lore_for([{"role": "user", "content": "用 showmount 看下共享目录"}])
+    assert ".git" in lore_for([{"role": "user", "content": "检查目标有没有源码泄露"}])
+    assert "密钥" in lore_for([{"role": "tool", "content": "secret_scan 的结果"}])

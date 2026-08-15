@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Awaitable, Callable
 
 from .safety import classify
+from .scope import ScopeGuard
 
 # 提交给 LLM 的工具 JSON Schema（OpenAI 格式）
 TOOL_SCHEMAS: list[dict[str, Any]] = [
@@ -92,6 +93,60 @@ TOOL_SCHEMAS: list[dict[str, Any]] = [
             "parameters": {"type": "object", "properties": {}},
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "evidence_list",
+            "description": (
+                "列出本会话全部工具执行证据（编号/工具/大小/摘要）。"
+                "工具输出会完整保存为证据，长输出只回传高信号预览；"
+                "需要确认某个结论是否有真实输出支撑时先看这里。"
+            ),
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "evidence_view",
+            "description": "查看某条证据的完整原始输出（按需回查，不占上下文）。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "evidence_id": {"type": "string", "description": "证据编号，如 e001"},
+                    "max_chars": {"type": "integer", "description": "最多返回字符数，默认 8000"},
+                },
+                "required": ["evidence_id"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "evidence_search",
+            "description": "在所有历史工具输出中搜索关键词（如 flag、admin、version），返回命中证据列表。",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {"type": "string", "description": "搜索关键词"},
+                    "limit": {"type": "integer", "description": "最多返回条数，默认 6"},
+                },
+                "required": ["query"],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "attack_surface",
+            "description": (
+                "生成当前攻击面快照：从已收集证据汇总开放端口/服务、Web 目标、"
+                "潜在攻击点、已确认发现与未探索方向。任务复杂或证据多时，"
+                "先调用它看全貌再决定下一步，避免重复打转。"
+            ),
+            "parameters": {"type": "object", "properties": {}},
+        },
+    },
 ]
 
 
@@ -139,10 +194,12 @@ class Executor:
         request_approval: ApprovalCallback | None = None,
         danger_policy: str = "ask",
         max_output_lines: int = 2000,
+        scope_policy: str = "ask",
     ):
         self.request_approval = request_approval
         self.danger_policy = danger_policy
         self.max_output_lines = max_output_lines
+        self.scope = ScopeGuard(policy=scope_policy)
         self._sysinfo_cache: tuple[float, str] | None = None
         self._pending: set[asyncio.Task] = set()
         # 深度定制工具扩展：name -> async fn(executor, args) -> str
@@ -184,6 +241,40 @@ class Executor:
         req = self.request_approval(command, level, reason)
         return await req.future
 
+    # ---------- 目标范围守卫（白帽合规第一道闸） ----------
+    async def _check_scope(self, command: str) -> str | None:
+        """命令含未授权外部目标 → 弹窗确认；返回 None 表示放行，否则返回拦截说明。
+
+        注意：独立于 danger_policy 审批通道——即使 danger_policy=always_allow
+        （危险命令自动放行），外部目标合规确认仍必须走用户弹窗，防策略开关绕过。
+        """
+        unauthorized = self.scope.unauthorized(command)
+        if not unauthorized:
+            return None
+        reason = (
+            "命令包含未授权的外部目标: " + ", ".join(unauthorized)
+            + "\n白帽铁律：只测试已授权范围。确认目标属于你的授权范围后再放行；"
+            "确认后本会话内不再询问。"
+        )
+        if self.request_approval is None:
+            # 无 UI（headless）：默认拒绝未授权外部目标
+            self.scope.decline_all(unauthorized)
+            return (
+                f"命令因目标未授权被拦截：{command}\n"
+                f"未授权目标: {', '.join(unauthorized)}"
+            )
+        req = self.request_approval(command, "confirm", reason)
+        decision = await req.future
+        if not decision["allow"]:
+            self.scope.decline_all(unauthorized)
+            return (
+                f"命令因目标未授权被拦截：{command}\n"
+                f"未授权目标: {', '.join(unauthorized)}\n"
+                "提示：确认目标在你的授权范围内后重试，或用 /scope 授权目标。"
+            )
+        self.scope.authorize_all(unauthorized)
+        return None
+
     # ---------- 工具实现 ----------
     async def _exec_run_command(self, args: dict[str, Any]) -> str:
         command = str(args.get("command", "")).strip()
@@ -191,6 +282,11 @@ class Executor:
             raise ToolError("command 为空")
         timeout = int(args.get("timeout") or 60)
         timeout = max(1, min(timeout, 3600))
+
+        # 目标范围守卫：未授权外部目标 → 确认后才放行（白帽合规）
+        blocked = await self._check_scope(command)
+        if blocked is not None:
+            return blocked
 
         verdict = classify(command)
         if verdict.level in ("confirm", "blocked"):
